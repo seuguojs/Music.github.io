@@ -46,7 +46,6 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         button:hover {
             background-color: #6a85b6;
         }
@@ -55,7 +54,6 @@
         .list-container {
             margin: 10px 0;
         }
-
         .list-container h4 {
             cursor: pointer;
             padding: 8px;
@@ -64,7 +62,6 @@
             margin: 0;
             border-radius: 5px;
         }
-
         .song-list, .favorite-list {
             list-style: none;
             padding: 0;
@@ -73,7 +70,6 @@
             display: none;
             border-top: 1px solid #ddd;
         }
-
         .song-item {
             padding: 10px;
             cursor: pointer;
@@ -82,7 +78,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .song-item:hover {
             background-color: #f0f0f0;
         }
@@ -90,10 +85,9 @@
         /* Controls */
         .controls {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             margin: 10px 0;
         }
-
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -104,13 +98,11 @@
             cursor: pointer;
             position: relative;
         }
-
         .progress {
             width: 0;
             height: 100%;
             background-color: #4a6fa1;
         }
-
         .time {
             display: flex;
             justify-content: space-between;
@@ -119,8 +111,22 @@
             color: #555;
         }
 
-        /* Heart and Sakura (Cherry Blossom) animation */
-        @keyframes floatEffect {
+        /* Search */
+        .search-container {
+            margin: 10px 0;
+            width: 100%;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        /* Heart animation */
+        @keyframes floatHeart {
             0% {
                 opacity: 1;
                 transform: translateY(0) scale(0.5) rotate(0deg);
@@ -130,25 +136,24 @@
                 transform: translateY(-100vh) scale(1.5) rotate(360deg);
             }
         }
-
-        .heart, .sakura {
+        .heart {
             position: fixed;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
+            background-color: pink;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: floatHeart 4s ease-in infinite;
             pointer-events: none;
             z-index: 0;
-            animation: floatEffect 6s ease-in infinite;
-        }
-
-        /* Sakura (Cherry Blossom) shape */
-        .sakura {
-            width: 25px;
-            height: 25px;
-            background-image: radial-gradient(circle, #ffb6c1 35%, transparent 36%);
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
         }
 
         /* Icon button styles */
+        .icon-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
         .icon-btn {
             background: none;
             border: none;
@@ -157,15 +162,18 @@
             color: #4a6fa1;
             transition: color 0.3s;
         }
-
+        .icon-btn:hover {
+            color: #6a85b6;
+        }
         .favorite-icon.filled {
-            color: #ff6347; /* Filled heart */
+            color: #ff6347;
         }
     </style>
 </head>
 <body>
 <div class="player-container">
     <h3>音乐播放器</h3>
+
     <!-- Search -->
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="搜索音乐..." oninput="searchSongs()">
@@ -229,13 +237,14 @@
             const li = document.createElement('li');
             li.classList.add('song-item');
             const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-            li.innerHTML = `<span onclick="playSong(${index})">${song.name}</span>
-                            <div class="icon-container">
-                                <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
-                                    ${isFavorite ? '❤️' : '♡'}
-                                </button>
-                                <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
-                            </div>`;
+            li.innerHTML = `
+                <span onclick="playSong(${index})">${song.name}</span>
+                <div class="icon-container">
+                    <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
+                        ${isFavorite ? '❤️' : '♡'}
+                    </button>
+                    <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
+                </div>`;
             listElement.appendChild(li);
         });
     }
@@ -277,35 +286,39 @@
     function toggleFavoriteSong(index) {
         const song = musicList[index];
         const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-
         if (isFavorite) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
         }
-
         displaySongs(musicList, 'songList');
         displaySongs(favoriteSongs, 'favoriteList');
     }
 
     function downloadSong(url) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = url.split('/').pop();
-        link.click();
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = url.split('/').pop();
+        a.click();
     }
 
-    audio.addEventListener('timeupdate', () => {
-        const percent = (audio.currentTime / audio.duration) * 100;
-        progress.style.width = percent + '%';
-        currentTimeDisplay.textContent = formatTime(audio.currentTime);
-    });
+    function toggleList(listId) {
+        const listElement = document.getElementById(listId);
+        listElement.style.display = listElement.style.display === 'none' ? 'block' : 'none';
+    }
 
-    audio.addEventListener('loadedmetadata', () => {
-        durationTimeDisplay.textContent = formatTime(audio.duration);
-    });
+    function togglePlayMode() {
+        playMode = playMode === 'order' ? 'shuffle' : 'order';
+        document.getElementById('playModeButton').textContent = playMode === 'order' ? '顺序播放' : '随机播放';
+    }
 
-    audio.addEventListener('ended', nextSong);
+    audio.ontimeupdate = () => {
+        const { currentTime, duration } = audio;
+        const progressPercent = (currentTime / duration) * 100;
+        progress.style.width = `${progressPercent}%`;
+        currentTimeDisplay.textContent = formatTime(currentTime);
+        durationTimeDisplay.textContent = formatTime(duration);
+    };
 
     function setProgress(e) {
         const width = e.target.clientWidth;
@@ -317,56 +330,27 @@
     function formatTime(time) {
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
     }
 
-    function toggleList(listId) {
-        const list = document.getElementById(listId);
-        list.style.display = list.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function searchSongs() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchInput));
+    async function searchSongs() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchValue));
         displaySongs(filteredSongs, 'songList');
     }
 
+    function createRandomHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.style.left = `${Math.random() * 100}vw`;
+        heart.style.animationDuration = `${Math.random() * 2 + 3}s`;
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+    }
+
+    setInterval(createRandomHeart, 300);
     loadMusicList();
 </script>
 </body>
-</div>
-
-<script>
-    // Function to create hearts and sakura blossoms randomly on the screen
-    function createFloatingEffect() {
-        const types = ['heart', 'sakura'];
-        const colors = ['pink', '#ffb6c1', 'white'];
-        
-        // Create random heart or sakura
-        const floatingElement = document.createElement('div');
-        const elementType = types[Math.floor(Math.random() * types.length)];
-        floatingElement.className = elementType;
-
-        // Set random starting position and color
-        floatingElement.style.left = Math.random() * 100 + 'vw';
-        floatingElement.style.top = '100vh';
-        floatingElement.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-        // Set random size
-        const size = Math.random() * 20 + 20 + 'px';
-        floatingElement.style.width = size;
-        floatingElement.style.height = size;
-
-        document.body.appendChild(floatingElement);
-
-        // Remove element after animation
-        setTimeout(() => {
-            floatingElement.remove();
-        }, 7000);
-    }
-
-    // Call the function every 500ms to generate floating hearts and sakura
-    setInterval(createFloatingEffect, 500);
-</script>
-</body>
 </html>
+
