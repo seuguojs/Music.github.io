@@ -97,7 +97,7 @@
         .progress {
             width: 0;
             height: 100%;
-            background-color: #FF66B2; /* 樱花粉色 */
+            background-color: #66FF66; /* 荧光浅绿色 */
         }
         #duration {
             margin-top: 5px;
@@ -105,14 +105,14 @@
             color: #333;
         }
 
-        /* 樱花粉爱心动画 */
-        .heart {
+        /* 荧光浅绿色四叶草动画 */
+        .clover {
             position: absolute;
             width: 30px;
             height: 30px;
-            background-color: #FF66B2; /* 樱花粉色 */
+            background-color: #66FF66; /* 荧光浅绿色 */
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            animation: float 3s infinite ease-in-out;
+            animation: float 4s infinite ease-in-out;
             opacity: 0.8;
             pointer-events: none; /* 不阻止点击事件 */
         }
@@ -284,18 +284,18 @@
         return `${minutes}:${secs}`;
     }
 
-    // 创建樱花粉爱心动画
-    function createHeart() {
-        const heart = document.createElement('div');
-        heart.className = 'heart';
-        heart.style.left = `${Math.random() * 100}vw`;
-        heart.style.top = `${Math.random() * 100}vh`;
-        heart.style.animationDuration = `${Math.random() * 2 + 3}s`; // 随机漂浮时长
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 5000); // 5秒后移除
+    // 创建荧光浅绿色四叶草动画
+    function createClover() {
+        const clover = document.createElement('div');
+        clover.className = 'clover';
+        clover.style.left = `${Math.random() * 100}vw`;
+        clover.style.top = `${Math.random() * 100}vh`;
+        clover.style.animationDuration = `${Math.random() * 2 + 3}s`; // 随机漂浮时长
+        document.body.appendChild(clover);
+        setTimeout(() => clover.remove(), 5000); // 5秒后移除
     }
 
-    setInterval(createHeart, 300); // 每300ms生成一个新的爱心
+    setInterval(createClover, 300); // 每300ms生成一个新的四叶草
 
     loadMusicList(); // 加载音乐列表
 </script>
