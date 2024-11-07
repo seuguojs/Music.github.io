@@ -46,6 +46,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: #6a85b6;
         }
@@ -54,6 +55,7 @@
         .list-container {
             margin: 10px 0;
         }
+
         .list-container h4 {
             cursor: pointer;
             padding: 8px;
@@ -62,6 +64,7 @@
             margin: 0;
             border-radius: 5px;
         }
+
         .song-list, .favorite-list {
             list-style: none;
             padding: 0;
@@ -70,6 +73,7 @@
             display: none;
             border-top: 1px solid #ddd;
         }
+
         .song-item {
             padding: 10px;
             cursor: pointer;
@@ -78,6 +82,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .song-item:hover {
             background-color: #f0f0f0;
         }
@@ -85,9 +90,10 @@
         /* Controls */
         .controls {
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             margin: 10px 0;
         }
+
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -98,11 +104,13 @@
             cursor: pointer;
             position: relative;
         }
+
         .progress {
             width: 0;
             height: 100%;
             background-color: #4a6fa1;
         }
+
         .time {
             display: flex;
             justify-content: space-between;
@@ -116,6 +124,7 @@
             margin: 10px 0;
             width: 100%;
         }
+
         .search-container input {
             padding: 8px;
             width: 100%;
@@ -125,24 +134,60 @@
             box-sizing: border-box;
         }
 
+        /* Heart animation */
+        @keyframes floatHeart {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0.5) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) scale(1.5) rotate(360deg);
+            }
+        }
+
+        .heart {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background-color: pink;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: floatHeart 4s ease-in infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         /* Icon button styles */
         .icon-container {
             display: flex;
             gap: 10px;
             align-items: center;
+            justify-content: flex-end; /* Align buttons to the right */
         }
+
         .icon-btn {
             background: none;
             border: none;
             cursor: pointer;
             font-size: 18px;
+            color: #4a6fa1;
             transition: color 0.3s;
         }
-        .favorite-icon {
-            color: #999; /* 空心收藏按钮颜色 */
+
+        .icon-btn:hover {
+            color: #6a85b6;
         }
+
         .favorite-icon.filled {
-            color: #4a6fa1; /* 实心收藏按钮颜色 */
+            color: #ff6347; /* 代表实心状态 */
+        }
+
+        /* Button container */
+        .button-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -182,6 +227,12 @@
     </div>
     <div class="progress-bar" onclick="setProgress(event)">
         <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- Favorite and Download buttons aligned -->
+    <div class="button-wrapper">
+        <button class="icon-btn favorite-icon" onclick="toggleFavorite()">♡</button>
+        <button class="icon-btn" onclick="downloadSong('sample-url')">⬇</button>
     </div>
 </div>
 
@@ -318,3 +369,4 @@
 </script>
 </body>
 </html>
+
