@@ -4,21 +4,19 @@
     <meta charset="UTF-8">
     <title>音乐播放器</title>
     <style>
-        /* 基础样式 */
+        /* Basic styles */
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background: linear-gradient(135deg, #6a85b6, #bac8e0);
             margin: 0;
             font-family: Arial, sans-serif;
             color: #333;
-            background: linear-gradient(135deg, #b3cde0, #e0d7f1); /* 渐变浅蓝色背景 */
-            overflow: hidden;
-            position: relative;
         }
 
-        /* 播放器容器 */
+        /* Player container */
         .player-container {
             width: 90%;
             max-width: 450px;
@@ -27,7 +25,6 @@
             background-color: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             text-align: center;
-            position: relative;
         }
 
         .player-container h3 {
@@ -35,7 +32,7 @@
             margin: 10px 0;
         }
 
-        /* 按钮样式 */
+        /* Button styles */
         button {
             background-color: #4a6fa1;
             border: none;
@@ -50,7 +47,7 @@
             background-color: #6a85b6;
         }
 
-        /* 列表样式 */
+        /* List styles */
         .list-container {
             margin: 10px 0;
         }
@@ -79,7 +76,7 @@
             background-color: #f0f0f0;
         }
 
-        /* 控制区域样式 */
+        /* Controls */
         .controls {
             display: flex;
             justify-content: space-around;
@@ -92,56 +89,66 @@
             border-radius: 5px;
             overflow: hidden;
             margin: 15px 0;
+            cursor: pointer;
             position: relative;
         }
         .progress {
             width: 0;
             height: 100%;
-            background-color: #66FF66; /* 荧光浅绿色 */
+            background-color: #4a6fa1;
         }
-        #duration {
-            margin-top: 5px;
+        .time {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
             font-size: 14px;
-            color: #333;
+            color: #555;
         }
 
-        /* 荧光浅绿色四叶草动画 */
-        .clover {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-color: #66FF66; /* 荧光浅绿色 */
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            animation: float 4s infinite ease-in-out;
-            opacity: 0.8;
-            pointer-events: none; /* 不阻止点击事件 */
+        /* Search */
+        .search-container {
+            margin: 10px 0;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
         }
 
-        @keyframes float {
-            0% { 
-                transform: translateY(0) scale(1); 
-                opacity: 1; 
+        /* Heart animation */
+        @keyframes floatHeart {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0.5);
             }
-            50% { 
-                transform: translateY(-50px) scale(1.1); 
-                opacity: 0.9;
-            }
-            100% { 
-                transform: translateY(-100px) scale(1); 
+            100% {
                 opacity: 0;
+                transform: translateY(-100vh) scale(1.5);
             }
         }
-
+        .heart {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background-color: pink;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: floatHeart 4s ease-in infinite;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 <div class="player-container">
     <h3>音乐播放器</h3>
 
-    <!-- 搜索框 -->
-    <input type="text" id="searchInput" placeholder="搜索音乐" oninput="searchSongs()" />
+    <!-- Search -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="搜索音乐..." oninput="searchSongs()">
+    </div>
 
-    <!-- 音乐列表和收藏列表 -->
+    <!-- Song and Favorite List -->
     <div class="list-container">
         <h4 onclick="toggleList('songList')">音乐列表</h4>
         <ul class="song-list" id="songList"></ul>
@@ -150,47 +157,48 @@
         <ul class="favorite-list" id="favoriteList"></ul>
     </div>
 
-    <!-- 当前播放的歌曲 -->
+    <!-- Current song display -->
     <div id="currentSong">当前歌曲: 未播放</div>
 
-    <!-- 播放控制按钮 -->
+    <!-- Controls -->
     <div class="controls">
         <button onclick="previousSong()">上一首</button>
-        <button onclick="playPause()">播放/暂停</button>
-        <button onclick="togglePlayMode()" id="playModeButton">顺序播放</button>
+        <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
         <button onclick="nextSong()">下一首</button>
         <button onclick="toggleFavorite()">收藏</button>
+        <button onclick="togglePlayMode()" id="playModeButton">顺序播放</button>
     </div>
 
-    <!-- 进度条 -->
-    <div class="progress-bar" id="progressBar" onclick="setProgress(event)">
+    <!-- Progress bar and Time display -->
+    <div class="time">
+        <span id="currentTime">00:00</span>
+        <span id="durationTime">--:--</span>
+    </div>
+    <div class="progress-bar" onclick="setProgress(event)">
         <div class="progress" id="progress"></div>
     </div>
-
-    <div id="duration">时长: 00:00</div>
 </div>
 
 <script>
     let musicList = [];
     let favoriteSongs = [];
     let currentIndex = 0;
-    let playMode = "order";  // 顺序播放或随机播放
+    let playMode = "order";
     let isPlaying = false;
 
     const audio = new Audio();
     const currentSongDisplay = document.getElementById('currentSong');
     const progress = document.getElementById('progress');
-    const durationDisplay = document.getElementById('duration');
-    const progressBar = document.getElementById('progressBar');
+    const playPauseButton = document.getElementById('playPauseButton');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const durationTimeDisplay = document.getElementById('durationTime');
 
-    // 从 JSON 文件加载音乐列表
     async function loadMusicList() {
         const response = await fetch('music-list.json');
         musicList = await response.json();
         displaySongs(musicList, 'songList');
     }
 
-    // 显示歌曲
     function displaySongs(songs, elementId) {
         const listElement = document.getElementById(elementId);
         listElement.innerHTML = '';
@@ -198,107 +206,108 @@
             const li = document.createElement('li');
             li.textContent = song.name;
             li.classList.add('song-item');
-            li.onclick = () => playSong(index);
+            li.onclick = () => playSong(elementId === 'songList' ? index : musicList.findIndex(m => m.name === song.name));
             listElement.appendChild(li);
         });
     }
 
-    // 播放/暂停功能
-    function playPause() {
+    function playSong(index) {
+        currentIndex = index;
+        audio.src = musicList[currentIndex].url;
+        currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
+        audio.play();
+        isPlaying = true;
+        playPauseButton.textContent = '暂停';
+    }
+
+    function togglePlayPause() {
         if (isPlaying) {
             audio.pause();
+            playPauseButton.textContent = '播放';
         } else {
             audio.play();
+            playPauseButton.textContent = '暂停';
         }
         isPlaying = !isPlaying;
     }
 
-    // 播放指定歌曲
-    function playSong(index) {
-        currentIndex = index;
-        audio.src = musicList[currentIndex].url;
-        audio.play();
-        isPlaying = true;
-        currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
-        audio.onloadedmetadata = () => {
-            durationDisplay.textContent = `时长: ${formatTime(audio.duration)}`;
-        };
-    }
-
-    // 搜索音乐
-    function searchSongs() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(query));
-        displaySongs(filteredSongs, 'songList');
-    }
-
-    // 切换到下一首或上一首
     function nextSong() {
-        currentIndex = (playMode === "shuffle") ? Math.floor(Math.random() * musicList.length) : (currentIndex + 1) % musicList.length;
+        if (playMode === "shuffle") {
+            currentIndex = Math.floor(Math.random() * musicList.length);
+        } else {
+            currentIndex = (currentIndex + 1) % musicList.length;
+        }
         playSong(currentIndex);
     }
+
     function previousSong() {
         currentIndex = (currentIndex - 1 + musicList.length) % musicList.length;
         playSong(currentIndex);
     }
 
-    // 播放模式切换
     function togglePlayMode() {
         playMode = playMode === "order" ? "shuffle" : "order";
         document.getElementById('playModeButton').textContent = playMode === "order" ? "顺序播放" : "随机播放";
     }
 
-    // 收藏或取消收藏
     function toggleFavorite() {
         const song = musicList[currentIndex];
         if (favoriteSongs.some(fav => fav.name === song.name)) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
+            createHeart();
         }
         displaySongs(favoriteSongs, 'favoriteList');
     }
 
-    // 进度条更新
     audio.addEventListener('timeupdate', () => {
         const percent = (audio.currentTime / audio.duration) * 100;
-        progress.style.width = `${percent}%`;
-        durationDisplay.textContent = `时长: ${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+        progress.style.width = percent + '%';
+        currentTimeDisplay.textContent = formatTime(audio.currentTime);
     });
 
-    // 自动播放下一首
+    audio.addEventListener('loadedmetadata', () => {
+        durationTimeDisplay.textContent = formatTime(audio.duration);
+    });
+
     audio.addEventListener('ended', nextSong);
 
-    // 进度条拖动
-    function setProgress(event) {
-        const progressBarWidth = progressBar.offsetWidth;
-        const clickPosition = event.offsetX;
-        const newTime = (clickPosition / progressBarWidth) * audio.duration;
-        audio.currentTime = newTime;
+    function setProgress(e) {
+        const width = e.target.clientWidth;
+        const clickX = e.offsetX;
+        const duration = audio.duration;
+        audio.currentTime = (clickX / width) * duration;
     }
 
-    // 格式化时间
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
-        return `${minutes}:${secs}`;
+    function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
-    // 创建荧光浅绿色四叶草动画
-    function createClover() {
-        const clover = document.createElement('div');
-        clover.className = 'clover';
-        clover.style.left = `${Math.random() * 100}vw`;
-        clover.style.top = `${Math.random() * 100}vh`;
-        clover.style.animationDuration = `${Math.random() * 2 + 3}s`; // 随机漂浮时长
-        document.body.appendChild(clover);
-        setTimeout(() => clover.remove(), 5000); // 5秒后移除
+    function toggleList(listId) {
+        const list = document.getElementById(listId);
+        list.style.display = list.style.display === 'block' ? 'none' : 'block';
     }
 
-    setInterval(createClover, 300); // 每300ms生成一个新的四叶草
+    function searchSongs() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchInput));
+        displaySongs(filteredSongs, 'songList');
+    }
 
-    loadMusicList(); // 加载音乐列表
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.style.left = `${Math.random() * 100}vw`;
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 4000);
+    }
+
+    loadMusicList();
 </script>
 </body>
 </html>
+
 
