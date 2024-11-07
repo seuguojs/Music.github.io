@@ -11,7 +11,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
         }
         .player-container {
@@ -21,6 +21,8 @@
             width: 350px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             text-align: center;
+            display: flex;
+            flex-direction: column;
         }
         .title {
             font-size: 1.8em;
@@ -31,20 +33,20 @@
             margin: 10px 0;
             color: #f584b7;
         }
-        .song-list {
-            max-height: 300px;
+        .song-list, .favorites-list {
+            max-height: 200px;
             overflow-y: auto;
             margin-top: 20px;
             padding: 0;
             list-style: none;
         }
-        .song-item {
+        .song-item, .favorites-item {
             padding: 10px;
             cursor: pointer;
             border-radius: 10px;
             transition: background-color 0.3s;
         }
-        .song-item:hover {
+        .song-item:hover, .favorites-item:hover {
             background-color: #f584b7;
         }
         .search-bar {
@@ -57,25 +59,19 @@
             color: #f4f4f4;
             font-size: 1em;
         }
-        .search-bar:focus {
-            outline: none;
-            background: #555;
-        }
         .controls {
             margin-top: 15px;
         }
         .controls button {
             background-color: #f584b7;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 12px;
             font-size: 1em;
             color: #fff;
             border-radius: 10px;
             cursor: pointer;
             transition: background 0.3s;
-        }
-        .controls button:hover {
-            background-color: #f584b7;
+            margin: 5px;
         }
         .progress-bar {
             margin-top: 10px;
@@ -87,36 +83,21 @@
             height: 100%;
             background-color: #f584b7;
         }
-        .favorites {
-            margin-top: 15px;
-            font-size: 1.1em;
-            color: #f4f4f4;
-        }
-        .favorites-list {
-            max-height: 150px;
-            overflow-y: auto;
-            margin-top: 10px;
-            padding: 0;
-            list-style: none;
-        }
-        .favorites-item {
-            padding: 8px;
-            cursor: pointer;
-            color: #f584b7;
-        }
     </style>
 </head>
 
 <body>
     <div class="player-container">
-        <div class="title">🎶 自动更新音乐播放器 🎶</div>
+        <div class="title">🎶 音乐播放器 🎶</div>
         <input type="text" id="searchBar" class="search-bar" placeholder="搜索音乐..." oninput="searchMusic()">
         <div class="current-song" id="currentSong">当前歌曲: 未播放</div>
         <ul class="song-list" id="songList"></ul>
         <audio id="audio" controls></audio>
         <div class="controls">
             <button onclick="previousSong()">上一首</button>
+            <button onclick="togglePlay()">播放/暂停</button>
             <button onclick="nextSong()">下一首</button>
+            <button onclick="toggleShuffle()">随机播放</button>
         </div>
         <div class="progress-bar">
             <div class="progress" id="progress"></div>
@@ -137,6 +118,7 @@
         let musicList = [];
         let currentIndex = 0;
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let isShuffle = false;
 
         // 加载音乐列表
         async function loadMusicList() {
@@ -160,6 +142,13 @@
                 li.classList.add('song-item');
                 li.textContent = song.name;
                 li.onclick = () => playSong(index);
+                const favButton = document.createElement('button');
+                favButton.textContent = favorites.includes(song.name) ? '❤️' : '🤍';
+                favButton.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(song);
+                };
+                li.appendChild(favButton);
                 songListElement.appendChild(li);
             });
         }
@@ -174,7 +163,7 @@
 
         // 下一首
         function nextSong() {
-            currentIndex = (currentIndex + 1) % musicList.length;
+            currentIndex = isShuffle ? Math.floor(Math.random() * musicList.length) : (currentIndex + 1) % musicList.length;
             playSong(currentIndex);
         }
 
@@ -184,6 +173,15 @@
             playSong(currentIndex);
         }
 
+        // 播放/暂停切换
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        }
+
         // 搜索功能
         function searchMusic() {
             const query = searchBar.value.toLowerCase();
@@ -191,13 +189,17 @@
             displaySongs(filteredSongs);
         }
 
-        // 收藏音乐
-        function addFavorite(song) {
-            if (!favorites.includes(song.name)) {
+        // 切换收藏状态
+        function toggleFavorite(song) {
+            const favoriteIndex = favorites.indexOf(song.name);
+            if (favoriteIndex > -1) {
+                favorites.splice(favoriteIndex, 1);
+            } else {
                 favorites.push(song.name);
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-                displayFavorites();
             }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            displaySongs(musicList);
+            displayFavorites();
         }
 
         // 显示收藏的音乐
@@ -209,6 +211,12 @@
                 li.textContent = favorite;
                 favoritesListElement.appendChild(li);
             });
+        }
+
+        // 随机播放模式切换
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            alert(isShuffle ? "随机播放已开启" : "顺序播放已开启");
         }
 
         // 更新进度条
@@ -228,3 +236,4 @@
     </script>
 </body>
 </html>
+
