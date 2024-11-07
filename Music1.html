@@ -74,6 +74,9 @@
             padding: 10px;
             cursor: pointer;
             color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .song-item:hover {
             background-color: #f0f0f0;
@@ -135,13 +138,27 @@
         }
         .heart {
             position: fixed;
-            width: 20px;
-            height: 20px;
+            width: 45px;
+            height: 45px;
             background-color: pink;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             animation: floatHeart 4s ease-in infinite;
             pointer-events: none;
             z-index: 0;
+        }
+
+        /* Icon button */
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #4a6fa1;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 10px;
+            transition: color 0.3s;
+        }
+        .icon-btn:hover {
+            color: #6a85b6;
         }
     </style>
 </head>
@@ -210,9 +227,10 @@
         listElement.innerHTML = '';
         songs.forEach((song, index) => {
             const li = document.createElement('li');
-            li.textContent = song.name;
             li.classList.add('song-item');
-            li.onclick = () => playSong(elementId === 'songList' ? index : musicList.findIndex(m => m.name === song.name));
+            li.innerHTML = `<span onclick="playSong(${index})">${song.name}</span>
+                            <button class="icon-btn" onclick="toggleFavoriteSong(${index})">♥</button>
+                            <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>`;
             listElement.appendChild(li);
         });
     }
@@ -258,12 +276,24 @@
 
     function toggleFavorite() {
         const song = musicList[currentIndex];
+        toggleFavoriteSong(musicList.findIndex(m => m.name === song.name));
+    }
+
+    function toggleFavoriteSong(index) {
+        const song = musicList[index];
         if (favoriteSongs.some(fav => fav.name === song.name)) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
         }
         displaySongs(favoriteSongs, 'favoriteList');
+    }
+
+    function downloadSong(url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = url.split('/').pop();
+        link.click();
     }
 
     audio.addEventListener('timeupdate', () => {
