@@ -10,10 +10,12 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #6a85b6, #bac8e0);
             margin: 0;
             font-family: Arial, sans-serif;
             color: #333;
+            background: #fdf2f9; /* 温暖樱花粉背景 */
+            overflow: hidden;
+            position: relative;
         }
 
         /* 播放器容器 */
@@ -25,6 +27,7 @@
             background-color: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             text-align: center;
+            position: relative;
         }
 
         .player-container h3 {
@@ -89,17 +92,54 @@
             border-radius: 5px;
             overflow: hidden;
             margin: 15px 0;
+            position: relative;
         }
         .progress {
             width: 0;
             height: 100%;
             background-color: #4a6fa1;
         }
+        #duration {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 樱花粉爱心动画 */
+        .heart {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ff66b2; /* 樱花粉色 */
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: float 3s infinite ease-in-out;
+            opacity: 0.8;
+            pointer-events: none; /* 不阻止点击事件 */
+        }
+
+        @keyframes float {
+            0% { 
+                transform: translateY(0) scale(1); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: translateY(-50px) scale(1.1); 
+                opacity: 0.9;
+            }
+            100% { 
+                transform: translateY(-100px) scale(1); 
+                opacity: 0;
+            }
+        }
+
     </style>
 </head>
 <body>
 <div class="player-container">
     <h3>音乐播放器</h3>
+
+    <!-- 搜索框 -->
+    <input type="text" id="searchInput" placeholder="搜索音乐" oninput="searchSongs()" />
 
     <!-- 音乐列表和收藏列表 -->
     <div class="list-container">
@@ -116,6 +156,7 @@
     <!-- 播放控制按钮 -->
     <div class="controls">
         <button onclick="previousSong()">上一首</button>
+        <button onclick="playPause()">播放/暂停</button>
         <button onclick="togglePlayMode()" id="playModeButton">顺序播放</button>
         <button onclick="nextSong()">下一首</button>
         <button onclick="toggleFavorite()">收藏</button>
@@ -125,6 +166,8 @@
     <div class="progress-bar">
         <div class="progress" id="progress"></div>
     </div>
+
+    <div id="duration">时长: 00:00</div>
 </div>
 
 <script>
@@ -132,10 +175,12 @@
     let favoriteSongs = [];
     let currentIndex = 0;
     let playMode = "order";  // 顺序播放或随机播放
+    let isPlaying = false;
 
     const audio = new Audio();
     const currentSongDisplay = document.getElementById('currentSong');
     const progress = document.getElementById('progress');
+    const durationDisplay = document.getElementById('duration');
 
     // 从 JSON 文件加载音乐列表
     async function loadMusicList() {
@@ -152,29 +197,45 @@
             const li = document.createElement('li');
             li.textContent = song.name;
             li.classList.add('song-item');
-            li.onclick = () => playSong(elementId === 'songList' ? index : musicList.findIndex(m => m.name === song.name));
+            li.onclick = () => playSong(index);
             listElement.appendChild(li);
         });
+    }
+
+    // 播放/暂停功能
+    function playPause() {
+        if (isPlaying) {
+            audio.pause();
+        } else {
+            audio.play();
+        }
+        isPlaying = !isPlaying;
     }
 
     // 播放指定歌曲
     function playSong(index) {
         currentIndex = index;
         audio.src = musicList[currentIndex].url;
-        currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
         audio.play();
+        isPlaying = true;
+        currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
+        audio.onloadedmetadata = () => {
+            durationDisplay.textContent = `时长: ${formatTime(audio.duration)}`;
+        };
+    }
+
+    // 搜索音乐
+    function searchSongs() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(query));
+        displaySongs(filteredSongs, 'songList');
     }
 
     // 切换到下一首或上一首
     function nextSong() {
-        if (playMode === "shuffle") {
-            currentIndex = Math.floor(Math.random() * musicList.length);
-        } else {
-            currentIndex = (currentIndex + 1) % musicList.length;
-        }
+        currentIndex = (playMode === "shuffle") ? Math.floor(Math.random() * musicList.length) : (currentIndex + 1) % musicList.length;
         playSong(currentIndex);
     }
-
     function previousSong() {
         currentIndex = (currentIndex - 1 + musicList.length) % musicList.length;
         playSong(currentIndex);
@@ -201,10 +262,18 @@
     audio.addEventListener('timeupdate', () => {
         const percent = (audio.currentTime / audio.duration) * 100;
         progress.style.width = percent + '%';
+        durationDisplay.textContent = `时长: ${formatTime(audio.currentTime)}`;
     });
 
     // 自动播放下一首
     audio.addEventListener('ended', nextSong);
+
+    // 格式化时间
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${secs}`;
+    }
 
     // 列表折叠功能
     function toggleList(listId) {
@@ -212,10 +281,24 @@
         list.style.display = list.style.display === 'block' ? 'none' : 'block';
     }
 
+    // 创建樱花粉爱心动画
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.style.left = `${Math.random() * 100}vw`;
+        heart.style.top = `${Math.random() * 100}vh`;
+        heart.style.animationDuration = `${Math.random() * 2 + 3}s`; // 随机漂浮时长
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000); // 5秒后移除
+    }
+
+    setInterval(createHeart, 300); // 每300ms生成一个新的爱心
+
     loadMusicList(); // 加载音乐列表
 </script>
 </body>
 </html>
+
 
 
 
