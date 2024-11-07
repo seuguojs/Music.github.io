@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>音乐播放器</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .player-container {
+            background: linear-gradient(to right, #ff5f6d, #ffc3a0);
+            border-radius: 20px;
+            padding: 20px;
+            width: 350px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .title {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        .current-song {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #f584b7;
+        }
+        .song-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding: 0;
+            list-style: none;
+        }
+        .song-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        .song-item:hover {
+            background-color: #f584b7;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: #f4f4f4;
+            font-size: 1em;
+        }
+        .search-bar:focus {
+            outline: none;
+            background: #555;
+        }
+        .controls {
+            margin-top: 15px;
+        }
+        .controls button {
+            background-color: #f584b7;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .controls button:hover {
+            background-color: #f584b7;
+        }
+        .progress-bar {
+            margin-top: 10px;
+            width: 100%;
+            height: 5px;
+            background-color: #333;
+        }
+        .progress {
+            height: 100%;
+            background-color: #f584b7;
+        }
+        .favorites {
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #f4f4f4;
+        }
+        .favorites-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+            padding: 0;
+            list-style: none;
+        }
+        .favorites-item {
+            padding: 8px;
+            cursor: pointer;
+            color: #f584b7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="player-container">
+        <div class="title">🎶 自动更新音乐播放器 🎶</div>
+        <input type="text" id="searchBar" class="search-bar" placeholder="搜索音乐..." oninput="searchMusic()">
+        <div class="current-song" id="currentSong">当前歌曲: 未播放</div>
+        <ul class="song-list" id="songList"></ul>
+        <audio id="audio" controls></audio>
+        <div class="controls">
+            <button onclick="previousSong()">上一首</button>
+            <button onclick="nextSong()">下一首</button>
+        </div>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="favorites">
+            <h4>我的收藏</h4>
+            <ul class="favorites-list" id="favoritesList"></ul>
+        </div>
+    </div>
+
+    <script>
+        const audio = document.getElementById('audio');
+        const currentSongDisplay = document.getElementById('currentSong');
+        const progress = document.getElementById('progress');
+        const songListElement = document.getElementById('songList');
+        const favoritesListElement = document.getElementById('favoritesList');
+        const searchBar = document.getElementById('searchBar');
+        let musicList = [];
+        let currentIndex = 0;
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+        // 加载音乐列表
+        async function loadMusicList() {
+            try {
+                const response = await fetch('https://api.github.com/repos/你的用户名/你的仓库名/contents/你的文件夹名');
+                const files = await response.json();
+                musicList = files
+                    .filter(file => file.name.endsWith('.mp3'))
+                    .map(file => ({ name: file.name.replace('.mp3', ''), url: file.download_url }));
+                displaySongs(musicList);
+            } catch (error) {
+                console.error('加载音乐列表时出错:', error);
+            }
+        }
+
+        // 显示歌曲列表
+        function displaySongs(songs) {
+            songListElement.innerHTML = '';
+            songs.forEach((song, index) => {
+                const li = document.createElement('li');
+                li.classList.add('song-item');
+                li.textContent = song.name;
+                li.onclick = () => playSong(index);
+                songListElement.appendChild(li);
+            });
+        }
+
+        // 播放音乐
+        function playSong(index) {
+            currentIndex = index;
+            audio.src = musicList[currentIndex].url;
+            currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
+            audio.play();
+        }
+
+        // 下一首
+        function nextSong() {
+            currentIndex = (currentIndex + 1) % musicList.length;
+            playSong(currentIndex);
+        }
+
+        // 上一首
+        function previousSong() {
+            currentIndex = (currentIndex - 1 + musicList.length) % musicList.length;
+            playSong(currentIndex);
+        }
+
+        // 搜索功能
+        function searchMusic() {
+            const query = searchBar.value.toLowerCase();
+            const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(query));
+            displaySongs(filteredSongs);
+        }
+
+        // 收藏音乐
+        function addFavorite(song) {
+            if (!favorites.includes(song.name)) {
+                favorites.push(song.name);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                displayFavorites();
+            }
+        }
+
+        // 显示收藏的音乐
+        function displayFavorites() {
+            favoritesListElement.innerHTML = '';
+            favorites.forEach(favorite => {
+                const li = document.createElement('li');
+                li.classList.add('favorites-item');
+                li.textContent = favorite;
+                favoritesListElement.appendChild(li);
+            });
+        }
+
+        // 更新进度条
+        audio.addEventListener('timeupdate', () => {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progress.style.width = percent + '%';
+        });
+
+        // 播放结束后切换到下一首
+        audio.addEventListener('ended', () => {
+            nextSong();
+        });
+
+        // 初始加载音乐列表和收藏
+        loadMusicList();
+        displayFavorites();
+    </script>
+</body>
+</html>
