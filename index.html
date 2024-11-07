@@ -15,6 +15,7 @@
             font-family: Arial, sans-serif;
             color: #333;
             overflow: hidden;
+            position: relative;
         }
 
         /* Player container */
@@ -150,7 +151,7 @@
             position: fixed;
             width: 20px;
             height: 20px;
-            background-color: pink;
+            background-color: #FFB6C1; /* 樱花粉 */
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             animation: floatHeart 4s ease-in infinite;
             pointer-events: none;
@@ -162,7 +163,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
-            justify-content: flex-end; /* Align buttons to the right */
+            justify-content: flex-end;
         }
 
         .icon-btn {
@@ -179,7 +180,7 @@
         }
 
         .favorite-icon.filled {
-            color: #ff6347; /* 代表实心状态 */
+            color: #ff6347;
         }
 
         /* Button container */
@@ -235,9 +236,6 @@
         <button class="icon-btn" onclick="downloadSong('sample-url')">⬇</button>
     </div>
 </div>
-
-<!-- Floating Heart -->
-<div class="heart"></div>
 
 <script>
     let musicList = [];
@@ -315,13 +313,11 @@
     function toggleFavoriteSong(index) {
         const song = musicList[index];
         const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-
         if (isFavorite) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
         }
-
         displaySongs(musicList, 'songList');
         displaySongs(favoriteSongs, 'favoriteList');
     }
@@ -370,6 +366,19 @@
         const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchInput));
         displaySongs(filteredSongs, 'songList');
     }
+
+    function generateHearts() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.style.left = `${Math.random() * 100}vw`;
+        heart.style.animationDuration = `${Math.random() * 2 + 3}s`;
+        document.body.appendChild(heart);
+        setTimeout(() => {
+            heart.remove();
+        }, 5000);
+    }
+
+    setInterval(generateHearts, 500);
 
     loadMusicList();
 </script>
