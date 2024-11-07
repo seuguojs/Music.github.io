@@ -74,6 +74,9 @@
             padding: 10px;
             cursor: pointer;
             color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .song-item:hover {
             background-color: #f0f0f0;
@@ -122,26 +125,24 @@
             box-sizing: border-box;
         }
 
-        /* Heart animation */
-        @keyframes floatHeart {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(0.5) rotate(0deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100vh) scale(1.5) rotate(360deg);
-            }
+        /* Icon button styles */
+        .icon-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        .heart {
-            position: fixed;
-            width: 40px;
-            height: 40px;
-            background-color: pink;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            animation: floatHeart 4s ease-in infinite;
-            pointer-events: none;
-            z-index: 0;
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+        .favorite-icon {
+            color: #999; /* 空心收藏按钮颜色 */
+        }
+        .favorite-icon.filled {
+            color: #4a6fa1; /* 实心收藏按钮颜色 */
         }
     </style>
 </head>
@@ -171,7 +172,6 @@
         <button onclick="previousSong()">上一首</button>
         <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
         <button onclick="nextSong()">下一首</button>
-        <button onclick="toggleFavorite()">收藏</button>
         <button onclick="togglePlayMode()" id="playModeButton">顺序播放</button>
     </div>
 
@@ -210,9 +210,15 @@
         listElement.innerHTML = '';
         songs.forEach((song, index) => {
             const li = document.createElement('li');
-            li.textContent = song.name;
             li.classList.add('song-item');
-            li.onclick = () => playSong(elementId === 'songList' ? index : musicList.findIndex(m => m.name === song.name));
+            const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
+            li.innerHTML = `<span onclick="playSong(${index})">${song.name}</span>
+                            <div class="icon-container">
+                                <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
+                                    ${isFavorite ? '❤️' : '♡'}
+                                </button>
+                                <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
+                            </div>`;
             listElement.appendChild(li);
         });
     }
@@ -251,19 +257,25 @@
         playSong(currentIndex);
     }
 
-    function togglePlayMode() {
-        playMode = playMode === "order" ? "shuffle" : "order";
-        document.getElementById('playModeButton').textContent = playMode === "order" ? "顺序播放" : "随机播放";
-    }
+    function toggleFavoriteSong(index) {
+        const song = musicList[index];
+        const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
 
-    function toggleFavorite() {
-        const song = musicList[currentIndex];
-        if (favoriteSongs.some(fav => fav.name === song.name)) {
+        if (isFavorite) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
         }
+
+        displaySongs(musicList, 'songList');
         displaySongs(favoriteSongs, 'favoriteList');
+    }
+
+    function downloadSong(url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = url.split('/').pop();
+        link.click();
     }
 
     audio.addEventListener('timeupdate', () => {
@@ -302,23 +314,7 @@
         displaySongs(filteredSongs, 'songList');
     }
 
-    // Create hearts continuously
-    setInterval(createHeart, 800);
-
-    function createHeart() {
-        const heart = document.createElement('div');
-        heart.classList.add('heart');
-        heart.style.left = `${Math.random() * 100}vw`;
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 4000);
-    }
-
     loadMusicList();
 </script>
 </body>
 </html>
-
-
-
-
-
