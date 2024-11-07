@@ -138,8 +138,8 @@
         }
         .heart {
             position: fixed;
-            width: 45px;
-            height: 45px;
+            width: 20px;
+            height: 20px;
             background-color: pink;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             animation: floatHeart 4s ease-in infinite;
@@ -147,18 +147,24 @@
             z-index: 0;
         }
 
-        /* Icon button */
+        /* Icon button styles */
+        .icon-container {
+            display: flex;
+            gap: 10px;
+        }
         .icon-btn {
             background: none;
             border: none;
-            color: #4a6fa1;
             cursor: pointer;
             font-size: 18px;
-            margin-left: 10px;
+            color: #4a6fa1;
             transition: color 0.3s;
         }
         .icon-btn:hover {
             color: #6a85b6;
+        }
+        .favorite-icon.filled {
+            color: #ff6347; /* 代表实心状态 */
         }
     </style>
 </head>
@@ -228,9 +234,14 @@
         songs.forEach((song, index) => {
             const li = document.createElement('li');
             li.classList.add('song-item');
+            const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
             li.innerHTML = `<span onclick="playSong(${index})">${song.name}</span>
-                            <button class="icon-btn" onclick="toggleFavoriteSong(${index})">♥</button>
-                            <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>`;
+                            <div class="icon-container">
+                                <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
+                                    ${isFavorite ? '❤️' : '♡'}
+                                </button>
+                                <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
+                            </div>`;
             listElement.appendChild(li);
         });
     }
@@ -269,23 +280,17 @@
         playSong(currentIndex);
     }
 
-    function togglePlayMode() {
-        playMode = playMode === "order" ? "shuffle" : "order";
-        document.getElementById('playModeButton').textContent = playMode === "order" ? "顺序播放" : "随机播放";
-    }
-
-    function toggleFavorite() {
-        const song = musicList[currentIndex];
-        toggleFavoriteSong(musicList.findIndex(m => m.name === song.name));
-    }
-
     function toggleFavoriteSong(index) {
         const song = musicList[index];
-        if (favoriteSongs.some(fav => fav.name === song.name)) {
+        const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
+
+        if (isFavorite) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
         }
+
+        displaySongs(musicList, 'songList');
         displaySongs(favoriteSongs, 'favoriteList');
     }
 
@@ -332,20 +337,8 @@
         displaySongs(filteredSongs, 'songList');
     }
 
-    // Create hearts continuously
-    setInterval(createHeart, 800);
-
-    function createHeart() {
-        const heart = document.createElement('div');
-        heart.classList.add('heart');
-        heart.style.left = `${Math.random() * 100}vw`;
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 4000);
-    }
-
     loadMusicList();
 </script>
 </body>
 </html>
-
 
