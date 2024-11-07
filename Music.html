@@ -10,7 +10,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            background: linear-gradient(135deg, #b3cde0, #c3aed6);
             font-family: Arial, sans-serif;
             margin: 0;
             color: #333;
@@ -22,30 +22,33 @@
             max-width: 500px;
             padding: 20px;
             border-radius: 12px;
-            background: #ffffff;
+            background: #fff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
         /* 搜索框 */
         .search-container input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #ddd;
             font-size: 16px;
+            outline: none;
         }
         /* 折叠区域样式 */
         .section {
             text-align: left;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
         .section h4 {
             cursor: pointer;
             font-weight: bold;
-            background: #a1c4fd;
-            color: #fff;
+            background: #b3cde0;
+            color: #333;
             padding: 10px;
             border-radius: 8px;
             margin: 0;
@@ -54,7 +57,7 @@
             align-items: center;
         }
         .song-list, .favorite-list {
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
             list-style: none;
             margin: 10px 0;
@@ -65,12 +68,13 @@
         .song-item, .favorite-item {
             padding: 10px;
             cursor: pointer;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         .song-item:hover, .favorite-item:hover {
-            background-color: #f0f0f0;
+            background-color: #f2f2f2;
         }
         /* 播放控制区域 */
         .controls {
@@ -82,30 +86,32 @@
             border-top: 1px solid #ddd;
         }
         button, .favorite-button {
-            padding: 8px 12px;
+            padding: 8px 15px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            background: #fff;
-            color: #333;
+            background: #c3aed6;
+            color: #fff;
             font-weight: bold;
             transition: background-color 0.3s;
+            font-size: 14px;
         }
         button:hover, .favorite-button:hover {
-            background: #f0f0f0;
+            background: #b3cde0;
         }
         /* 播放进度条 */
         .progress-bar {
             width: 100%;
             height: 8px;
-            background-color: #eee;
+            background-color: #ddd;
             border-radius: 4px;
             overflow: hidden;
+            margin: 10px 0;
         }
         .progress {
             height: 100%;
             width: 0;
-            background-color: #a1c4fd;
+            background-color: #b3cde0;
         }
         /* 音量控制 */
         .volume-control {
@@ -249,7 +255,7 @@
 
     function displayFavoriteSongs() {
         favoriteListElement.innerHTML = '';
-        favoriteSongs.forEach(song => {
+        favoriteSongs.forEach((song) => {
             const li = document.createElement('li');
             li.classList.add('favorite-item');
             li.textContent = song.name;
