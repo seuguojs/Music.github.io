@@ -1,273 +1,427 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>圣诞节祝贺</title>
+    <title>音乐播放器</title>
     <style>
-        /* General Styles */
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: linear-gradient(135deg, #6a85b6, #bac8e0);
             font-family: Arial, sans-serif;
             overflow: hidden;
+            background-color: #f0f8ff;
             position: relative;
+        }
+
+        /* Full-screen video background */
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            object-fit: cover;
+            z-index: -1;
         }
 
-        /* Snowflakes */
-        @keyframes snowflakes {
-            0% { top: -10%; opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-
+        /* Snowflakes animation */
         .snowflake {
             position: absolute;
-            top: -10%;
+            top: -10px;
             color: white;
-            font-size: 20px;
-            animation: snowflakes linear infinite;
-            pointer-events: none;
+            font-size: 30px;
             opacity: 0.8;
+            pointer-events: none;
+            animation: snowfall linear infinite;
         }
 
-        .snowflake:nth-child(odd) {
-            font-size: 25px;
-            animation-duration: 8s;
+        @keyframes snowfall {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
         }
 
-        .snowflake:nth-child(even) {
-            font-size: 15px;
-            animation-duration: 10s;
-            animation-delay: 2s;
-        }
-
-        /* Player Container */
         .player-container {
-            width: 100%;
-            max-width: 450px;
+            max-width: 600px;
+            margin: 20px auto;
             padding: 20px;
-            border-radius: 12px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
         }
 
-        .player-container h3 {
-            color: #4a6fa1;
-            margin-bottom: 10px;
+        h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .list-container {
+            margin-bottom: 20px;
+        }
+
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            cursor: pointer;
         }
 
         .controls {
             display: flex;
             justify-content: space-around;
-            margin: 15px 0;
-            align-items: center;
-        }
-        .controls button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            background-color: #4a6fa1;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .controls button:hover {
-            background-color: #6a85b6;
-        }
-
-        /* Message Popup */
-        .message-popup {
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 24px;
-            z-index: 999;
-            display: none;
-        }
-
-        .message-popup.active {
-            display: block;
-        }
-
-        /* MP4 Video Container */
-        .video-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
-
-        .video-container.active {
-            opacity: 1;
-        }
-
-        video {
-            max-width: 80%;
-            max-height: 80%;
-        }
-
-        /* Song List */
-        .song-list-container {
             margin: 20px 0;
         }
 
-        .song-list-container ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .song-item {
+        .controls button {
             padding: 10px;
-            cursor: pointer;
-            background-color: #f1f1f1;
-            color: #333;
+            background-color: #5cacee;
+            border: none;
             border-radius: 5px;
-            margin-bottom: 10px;
+            color: white;
+            cursor: pointer;
         }
 
-        .song-item:hover {
+        .progress-bar {
+            width: 100%;
+            height: 10px;
             background-color: #ddd;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .player-container {
-                padding: 15px;
-                width: 90%;
-            }
+        .progress {
+            width: 0%;
+            height: 100%;
+            background-color: #5cacee;
+        }
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        #currentSong {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Minimizing effect */
+        .minimized {
+            display: none;
+        }
+
+        .play-mode-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-container button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .favorite-list, .song-list {
+            list-style-type: none;
+            padding: 0;
         }
     </style>
 </head>
 <body>
 
-<!-- Snowflakes effect -->
-<div id="snowflakes"></div>
+<video id="backgroundVideo" autoplay loop muted>
+    <source src="https://github.com/seuguojs/Music.github.io/blob/main/a3c88c4966b2de751d960aa345be3e37.mp4?raw=true" type="video/mp4">
+</video>
 
-<!-- Music Player Container -->
-<div class="player-container" id="playerContainer">
-    <h3>选择圣诞节音乐</h3>
+<div class="player-container">
+    <h3>音乐播放器</h3>
 
-    <!-- Song List -->
-    <div class="song-list-container">
-        <ul id="songList">
-            <!-- Songs will be listed here -->
-        </ul>
+    <!-- Search -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="搜索音乐..." oninput="searchSongs()">
     </div>
+
+    <!-- Song and Favorite List -->
+    <div class="list-container">
+        <h4 onclick="toggleList('favoriteList')">收藏列表 <span id="favoriteCount">0</span></h4>
+        <ul class="favorite-list" id="favoriteList" style="display: none;"></ul>
+
+        <h4 onclick="toggleList('songList')">音乐列表 <span id="songCount">0</span></h4>
+        <ul class="song-list" id="songList"></ul>
+    </div>
+
+    <!-- Current song display -->
+    <div id="currentSong">当前歌曲: 未播放</div>
 
     <!-- Controls -->
     <div class="controls">
-        <button id="playPauseButton" onclick="togglePlayPause()">播放</button>
-        <button id="minimizeButton" onclick="minimizePlayer()">最小化</button>
+        <button onclick="previousSong()">上一首</button>
+        <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
+        <button onclick="nextSong()">下一首</button>
+        <button class="play-mode-btn" onclick="changePlayMode()" title="切换播放模式">
+            <span id="playModeIcon">➤</span>
+        </button>
+    </div>
+
+    <!-- Progress bar and Time display -->
+    <div class="time">
+        <span id="currentTime">00:00</span>
+        <span id="durationTime">--:--</span>
+    </div>
+    <div class="progress-bar" onclick="setProgress(event)">
+        <div class="progress" id="progress"></div>
     </div>
 </div>
 
-<!-- Video Container -->
-<div class="video-container" id="videoContainer">
-    <video id="christmasVideo" autoplay loop>
-        <source src="https://github.com/seuguojs/Music.github.io/blob/main/a3c88c4966b2de751d960aa345be3e37.mp4?raw=true" type="video/mp4">
-        您的浏览器不支持视频播放。
-    </video>
-</div>
-
-<!-- Message Popup -->
-<div class="message-popup" id="messagePopup">
-    圣诞快乐！愿你拥有一个温馨的假期！
-</div>
-
 <script>
-    // Snowflakes effect
-    for (let i = 0; i < 50; i++) {
-        let snowflake = document.createElement('div');
-        snowflake.classList.add('snowflake');
-        snowflake.innerText = '❄';
-        snowflake.style.left = Math.random() * 100 + '%';
-        snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
-        document.getElementById('snowflakes').appendChild(snowflake);
-    }
-
-    // Song list
-    const songs = [
-        { name: '周杰伦 - 稻香', url: '周杰伦-稻香.mp3' },
-        { name: '圣诞之歌', url: 'christmas_song.mp3' }
-    ];
-
-    let audio;
-    let isPlaying = false;
+    let musicList = [];
+    let favoriteSongs = [];
     let currentIndex = 0;
+    let isPlaying = false;
+    let audio = new Audio();
+    const currentSongDisplay = document.getElementById('currentSong');
+    const progress = document.getElementById('progress');
+    const playPauseButton = document.getElementById('playPauseButton');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const durationTimeDisplay = document.getElementById('durationTime');
+    const favoriteCount = document.getElementById('favoriteCount');
+    const songCount = document.getElementById('songCount');
+    const playModeIcon = document.getElementById('playModeIcon');
 
-    // Load songs into the list
-    function loadSongs() {
-        const songList = document.getElementById('songList');
-        songList.innerHTML = '';
-        songs.forEach((song, index) => {
-            let li = document.createElement('li');
-            li.classList.add('song-item');
-            li.textContent = song.name;
-            li.onclick = () => selectSong(index);
-            songList.appendChild(li);
-        });
+    // Play modes: 'sequential', 'random', 'single'
+    let playMode = 'sequential';
+
+    // Current playing list: 'songList' or 'favoriteList'
+    let currentPlayingList = 'songList';
+
+    // Load music list from JSON
+    async function loadMusicList() {
+        try {
+            const response = await fetch('music-list.json');
+            if (!response.ok) throw new Error('无法加载音乐列表');
+            musicList = await response.json();
+            displaySongs(musicList, 'songList');
+            updateSongCount();
+        } catch (error) {
+            console.error(error);
+            alert('加载音乐列表失败，请检查music-list.json文件。');
+        }
     }
 
-    // Select a song to play
-    function selectSong(index) {
-        currentIndex = index;
-        const selectedSong = songs[index];
-        if (audio) {
-            audio.pause();
+    // Display songs in list
+    function displaySongs(songs, elementId) {
+        const listElement = document.getElementById(elementId);
+        listElement.innerHTML = '';
+        songs.forEach((song, index) => {
+            const li = document.createElement('li');
+            li.classList.add('song-item');
+            const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
+            li.innerHTML = `
+                <span onclick="playSong(${index}, '${elementId}')">${song.name}</span>
+                <div class="icon-container">
+                    <button class="icon-btn" onclick="toggleFavoriteSong(event, ${index}, '${elementId}')">
+                        ${isFavorite ? '❤️' : '♡'}
+                    </button>
+                    <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
+                </div>
+            `;
+            listElement.appendChild(li);
+        });
+        updateFavoriteCount();
+    }
+
+    // Play song
+    function playSong(index, listId) {
+        if (listId === 'favoriteList') {
+            currentPlayingList = 'favoriteList';
+            currentIndex = index;
+            audio.src = favoriteSongs[currentIndex].url;
+            currentSongDisplay.textContent = `当前歌曲: ${favoriteSongs[currentIndex].name}`;
+        } else {
+            currentPlayingList = 'songList';
+            currentIndex = index;
+            audio.src = musicList[currentIndex].url;
+            currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
         }
-        audio = new Audio(selectedSong.url);
         audio.play();
         isPlaying = true;
-        document.getElementById('playPauseButton').textContent = '暂停';
-
-        // Show the message popup after song starts
-        document.getElementById('messagePopup').classList.add('active');
+        playPauseButton.textContent = '暂停';
+        hidePlayer();
     }
 
     // Toggle play/pause
     function togglePlayPause() {
         if (isPlaying) {
             audio.pause();
-            document.getElementById('playPauseButton').textContent = '播放';
+            playPauseButton.textContent = '播放';
         } else {
             audio.play();
-            document.getElementById('playPauseButton').textContent = '暂停';
+            playPauseButton.textContent = '暂停';
         }
         isPlaying = !isPlaying;
     }
 
-    // Minimize the music player
-    function minimizePlayer() {
-        document.getElementById('playerContainer').style.display = 'none';
-        document.getElementById('videoContainer').classList.add('active');
+    // Play next song
+    function nextSong() {
+        if (playMode === 'single') {
+            audio.currentTime = 0;
+            audio.play();
+            return;
+        }
+
+        const list = currentPlayingList === 'favoriteList' ? favoriteSongs : musicList;
+        if (list.length === 0) return;
+
+        if (playMode === 'random') {
+            currentIndex = Math.floor(Math.random() * list.length);
+        } else { // 'sequential'
+            currentIndex = (currentIndex + 1) % list.length;
+        }
+        playSong(currentIndex, currentPlayingList);
     }
 
-    // Load songs when the page is ready
-    loadSongs();
+    // Play previous song
+    function previousSong() {
+        const list = currentPlayingList === 'favoriteList' ? favoriteSongs : musicList;
+        if (list.length === 0) return;
+
+        if (playMode === 'random') {
+            currentIndex = Math.floor(Math.random() * list.length);
+        } else { // 'sequential'
+            currentIndex = (currentIndex - 1 + list.length) % list.length;
+        }
+        playSong(currentIndex, currentPlayingList);
+    }
+
+    // Toggle favorite song
+    function toggleFavoriteSong(event, index, listId) {
+        event.stopPropagation(); // Prevent triggering playSong
+
+        let song;
+        if (listId === 'favoriteList') {
+            song = favoriteSongs[index];
+        } else {
+            song = musicList[index];
+        }
+
+        const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
+        if (isFavorite) {
+            favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
+        } else {
+            favoriteSongs.push(song);
+        }
+        displaySongs(musicList, 'songList');
+        displaySongs(favoriteSongs, 'favoriteList');
+    }
+
+    // Download song
+    function downloadSong(url) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = url.split('/').pop();
+        a.click();
+    }
+
+    // Toggle list visibility
+    function toggleList(listId) {
+        const listElement = document.getElementById(listId);
+        const isVisible = listElement.style.display === 'block';
+        document.querySelectorAll('.list-container ul').forEach(ul => {
+            ul.style.display = 'none';
+        });
+        if (!isVisible) {
+            listElement.style.display = 'block';
+        }
+    }
+
+    // Update song count
+    function updateSongCount() {
+        songCount.textContent = musicList.length;
+    }
+
+    // Update favorite count
+    function updateFavoriteCount() {
+        favoriteCount.textContent = favoriteSongs.length;
+    }
+
+    // Update progress bar
+    audio.addEventListener('timeupdate', () => {
+        const { currentTime, duration } = audio;
+        if (duration) {
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            currentTimeDisplay.textContent = formatTime(currentTime);
+            durationTimeDisplay.textContent = formatTime(duration);
+        } else {
+            progress.style.width = '0%';
+            currentTimeDisplay.textContent = '00:00';
+            durationTimeDisplay.textContent = '--:--';
+        }
+    });
+
+    // Set progress on click
+    function setProgress(event) {
+        const progressBarWidth = event.currentTarget.clientWidth;
+        const clickX = event.offsetX;
+        const duration = audio.duration;
+        if (duration) {
+            audio.currentTime = (clickX / progressBarWidth) * duration;
+        }
+    }
+
+    // Format time (mm:ss)
+    function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    }
+
+    // Search songs
+    function searchSongs() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchValue));
+        displaySongs(filteredSongs, 'songList');
+    }
+
+    // Hide player after song selection
+    function hidePlayer() {
+        setTimeout(() => {
+            document.querySelector('.player-container').classList.add('minimized');
+        }, 1000);
+    }
+
+    // Generate falling snowflakes
+    function createRandomSnowflake() {
+        const snowflake = document.createElement('div');
+        snowflake.classList.add('snowflake');
+        snowflake.textContent = '❄';
+
+        // Random position, size, opacity
+        snowflake.style.left = `${Math.random() * 100}vw`;
+        snowflake.style.fontSize = `${Math.random() * 10 + 20}px`;
+        snowflake.style.opacity = `${Math.random() * 0.5 + 0.5}`;
+        
+        // Random animation duration and swing amplitude
+        snowflake.style.animationDuration = `${Math.random() * 5 + 8}s`;
+        snowflake.style.animationDelay = `${Math.random() * 2}s`;
+        
+        document.body.appendChild(snowflake);
+
+        // Clean up snowflake element automatically
+        setTimeout(() => snowflake.remove(), 15000);
+    }
+
+    setInterval(createRandomSnowflake, 400);
 </script>
 
 </body>
