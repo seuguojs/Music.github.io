@@ -464,15 +464,23 @@
 
     // Generate falling snowflakes
     function createRandomSnowflake() {
-        const snowflake = document.createElement('div');
-        snowflake.classList.add('snowflake');
-        snowflake.textContent = '❄';
-        snowflake.style.left = `${Math.random() * 100}vw`;
-        snowflake.style.animationDuration = `${Math.random() * 3 + 10}s`;
-        snowflake.style.fontSize = `${Math.random() * 10 + 20}px`;
-        snowflake.style.opacity = `${Math.random() * 0.5 + 0.5}`;
-        document.body.appendChild(snowflake);
-        setTimeout(() => snowflake.remove(), 15000);
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    snowflake.textContent = '❄';
+
+    // 随机位置、大小、透明度
+    snowflake.style.left = `${Math.random() * 100}vw`;
+    snowflake.style.fontSize = `${Math.random() * 10 + 20}px`;
+    snowflake.style.opacity = `${Math.random() * 0.5 + 0.5}`;
+    
+    // 随机动画持续时间和摆动幅度
+    snowflake.style.animationDuration = `${Math.random() * 5 + 8}s`;
+    snowflake.style.animationDelay = `${Math.random() * 2}s`;
+    
+    document.body.appendChild(snowflake);
+
+    // 自动清理雪花元素
+    setTimeout(() => snowflake.remove(), 15000);
     }
 
     setInterval(createRandomSnowflake, 400);
