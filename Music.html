@@ -215,6 +215,7 @@
     let currentIndex = 0;
     let playMode = "order";
     let isPlaying = false;
+    let currentPlaylist = 'musicList'; // Default playlist is the full music list
 
     const audio = new Audio();
     const currentSongDisplay = document.getElementById('currentSong');
@@ -237,7 +238,7 @@
             li.classList.add('song-item');
             const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
             li.innerHTML = 
-                `<span onclick="playSong(${index})">${song.name}</span>
+                `<span onclick="playSong(${index}, '${elementId}')">${song.name}</span>
                 <div class="icon-container">
                     <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
                         ${isFavorite ? '❤️' : '♡'}
@@ -248,13 +249,15 @@
         });
     }
 
-    function playSong(index) {
+    function playSong(index, playlist) {
+        currentPlaylist = playlist; // Set current playlist (either 'musicList' or 'favoriteList')
+        const songList = currentPlaylist === 'favoriteList' ? favoriteSongs : musicList;
         currentIndex = index;
-        audio.src = musicList[currentIndex].url;
-        currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
+        audio.src = songList[currentIndex].url;
+        currentSongDisplay.textContent = `当前歌曲: ${songList[currentIndex].name}`;
         audio.play();
-        isPlaying = true;
         playPauseButton.textContent = '暂停';
+        isPlaying = true;
     }
 
     function togglePlayPause() {
@@ -269,17 +272,23 @@
     }
 
     function nextSong() {
-        if (playMode === "shuffle") {
-            currentIndex = Math.floor(Math.random() * musicList.length);
+        const songList = currentPlaylist === 'favoriteList' ? favoriteSongs : musicList;
+        if (playMode === 'order') {
+            currentIndex = (currentIndex + 1) % songList.length;
         } else {
-            currentIndex = (currentIndex + 1) % musicList.length;
+            currentIndex = Math.floor(Math.random() * songList.length);
         }
-        playSong(currentIndex);
+        playSong(currentIndex, currentPlaylist);
     }
 
     function previousSong() {
-        currentIndex = (currentIndex - 1 + musicList.length) % musicList.length;
-        playSong(currentIndex);
+        const songList = currentPlaylist === 'favoriteList' ? favoriteSongs : musicList;
+        if (playMode === 'order') {
+            currentIndex = (currentIndex - 1 + songList.length) % songList.length;
+        } else {
+            currentIndex = Math.floor(Math.random() * songList.length);
+        }
+        playSong(currentIndex, currentPlaylist);
     }
 
     function toggleFavoriteSong(index) {
