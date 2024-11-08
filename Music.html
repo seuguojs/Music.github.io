@@ -32,17 +32,23 @@
             position: absolute;
             top: -10%;
             color: white;
-            font-size: 30px;
+            font-size: 20px;
             animation: snowflakes linear infinite;
             pointer-events: none;
+            opacity: 0.8;
+            transition: opacity 0.5s ease;
         }
 
         .snowflake:nth-child(odd) {
-            animation-duration: 10s;
+            font-size: 25px;
+            animation-duration: 8s;
+            opacity: 0.9;
         }
 
         .snowflake:nth-child(even) {
-            animation-duration: 12s;
+            font-size: 15px;
+            animation-duration: 10s;
+            opacity: 0.7;
             animation-delay: 2s;
         }
 
@@ -208,7 +214,6 @@
         <button onclick="previousSong()">上一首</button>
         <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
         <button onclick="nextSong()">下一首</button>
-        <button onclick="toggleFavorite()">收藏</button>
     </div>
 
     <!-- Progress bar and Time display -->
@@ -235,7 +240,6 @@
     const favoriteCount = document.getElementById('favoriteCount');
     const songCount = document.getElementById('songCount');
 
-    // Load music list from JSON
     async function loadMusicList() {
         const response = await fetch('music-list.json');
         musicList = await response.json();
@@ -243,7 +247,6 @@
         updateSongCount();
     }
 
-    // Display songs in list
     function displaySongs(songs, elementId) {
         const listElement = document.getElementById(elementId);
         listElement.innerHTML = '';
@@ -265,7 +268,6 @@
         updateFavoriteCount();
     }
 
-    // Play song
     function playSong(index) {
         currentIndex = index;
         audio.src = musicList[currentIndex].url;
@@ -275,7 +277,6 @@
         playPauseButton.textContent = '暂停';
     }
 
-    // Toggle play/pause
     function togglePlayPause() {
         if (isPlaying) {
             audio.pause();
@@ -287,19 +288,16 @@
         isPlaying = !isPlaying;
     }
 
-    // Play next song
     function nextSong() {
         currentIndex = (currentIndex + 1) % musicList.length;
         playSong(currentIndex);
     }
 
-    // Play previous song
     function previousSong() {
         currentIndex = (currentIndex - 1 + musicList.length) % musicList.length;
         playSong(currentIndex);
     }
 
-    // Toggle favorite song
     function toggleFavoriteSong(index) {
         const song = musicList[index];
         const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
@@ -312,78 +310,54 @@
         displaySongs(favoriteSongs, 'favoriteList');
     }
 
-    // Download song
-    function downloadSong(url) {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = url.split('/').pop();
-        a.click();
-    }
-
-    // Toggle list visibility
-    function toggleList(listId) {
-        const listElement = document.getElementById(listId);
-        listElement.style.display = listElement.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // Update song count
-    function updateSongCount() {
-        songCount.textContent = musicList.length;
-    }
-
-    // Update favorite count
     function updateFavoriteCount() {
         favoriteCount.textContent = favoriteSongs.length;
     }
 
-    // Update progress bar
-    audio.ontimeupdate = () => {
-        const { currentTime, duration } = audio;
-        const progressPercent = (currentTime / duration) * 100;
-        progress.style.width = `${progressPercent}%`;
-        currentTimeDisplay.textContent = formatTime(currentTime);
-        durationTimeDisplay.textContent = formatTime(duration);
-    };
-
-    // Set progress on click
-    function setProgress(e) {
-        const width = e.target.clientWidth;
-        const clickX = e.offsetX;
-        const duration = audio.duration;
-        audio.currentTime = (clickX / width) * duration;
+    function updateSongCount() {
+        songCount.textContent = musicList.length;
     }
 
-    // Format time (mm:ss)
+    function setProgress(event) {
+        const progressBarWidth = event.currentTarget.clientWidth;
+        const clickX = event.offsetX;
+        const duration = audio.duration;
+        audio.currentTime = (clickX / progressBarWidth) * duration;
+    }
+
+    audio.addEventListener('timeupdate', () => {
+        const currentTime = audio.currentTime;
+        const duration = audio.duration;
+        progress.style.width = `${(currentTime / duration) * 100}%`;
+        currentTimeDisplay.textContent = formatTime(currentTime);
+        durationTimeDisplay.textContent = formatTime(duration);
+    });
+
+    audio.addEventListener('ended', nextSong);
+
     function formatTime(time) {
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
-    // Search songs
-    function searchSongs() {
-        const searchValue = document.getElementById('searchInput').value.toLowerCase();
-        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchValue));
-        displaySongs(filteredSongs, 'songList');
-    }
-
-    // Generate falling snowflakes
     function createRandomSnowflake() {
         const snowflake = document.createElement('div');
         snowflake.classList.add('snowflake');
         snowflake.textContent = '❄';
         snowflake.style.left = `${Math.random() * 100}vw`;
-        snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`;
+        snowflake.style.animationDuration = `${Math.random() * 5 + 7}s`;
+        snowflake.style.fontSize = `${Math.random() * 10 + 20}px`;
         document.body.appendChild(snowflake);
-        setTimeout(() => snowflake.remove(), 7000);
+        setTimeout(() => snowflake.remove(), 12000);
     }
 
-    setInterval(createRandomSnowflake, 300);
+    setInterval(createRandomSnowflake, 400);
 
-    // Initialize the player
     loadMusicList();
 </script>
 
 </body>
 </html>
+
 
