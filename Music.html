@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音乐播放器</title>
     <style>
         /* Basic styles */
@@ -14,25 +15,23 @@
             margin: 0;
             font-family: Arial, sans-serif;
             color: #333;
-            overflow: hidden;
         }
 
         /* Player container */
         .player-container {
-            width: 90%;
+            width: 100%;
             max-width: 450px;
             padding: 20px;
             border-radius: 12px;
             background-color: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             text-align: center;
-            position: relative;
-            z-index: 1;
         }
 
         .player-container h3 {
             color: #4a6fa1;
             margin: 10px 0;
+            font-size: 1.5em;
         }
 
         /* Button styles */
@@ -41,10 +40,13 @@
             border: none;
             border-radius: 5px;
             color: #fff;
-            padding: 8px 12px;
+            padding: 10px;
             font-weight: bold;
+            font-size: 1em;
             cursor: pointer;
             transition: background-color 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
         }
 
         button:hover {
@@ -52,10 +54,6 @@
         }
 
         /* List styles */
-        .list-container {
-            margin: 10px 0;
-        }
-
         .list-container h4 {
             cursor: pointer;
             padding: 8px;
@@ -68,14 +66,15 @@
         .song-list, .favorite-list {
             list-style: none;
             padding: 0;
-            max-height: 120px;
+            max-height: 180px;
             overflow-y: auto;
             display: none;
+            margin: 5px 0;
             border-top: 1px solid #ddd;
         }
 
         .song-item {
-            padding: 10px;
+            padding: 12px;
             cursor: pointer;
             color: #333;
             display: flex;
@@ -90,8 +89,8 @@
         /* Controls */
         .controls {
             display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
+            justify-content: space-around;
+            margin: 15px 0;
         }
 
         .progress-bar {
@@ -102,7 +101,6 @@
             overflow: hidden;
             margin: 15px 0;
             cursor: pointer;
-            position: relative;
         }
 
         .progress {
@@ -115,7 +113,7 @@
             display: flex;
             justify-content: space-between;
             margin: 5px 0;
-            font-size: 14px;
+            font-size: 0.9em;
             color: #555;
         }
 
@@ -126,35 +124,12 @@
         }
 
         .search-container input {
-            padding: 8px;
+            padding: 10px;
             width: 100%;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 1em;
             box-sizing: border-box;
-        }
-
-        /* Heart animation */
-        @keyframes floatHeart {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(0.5) rotate(0deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100vh) scale(1.5) rotate(360deg);
-            }
-        }
-
-        .heart {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            background-color: pink;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            animation: floatHeart 4s ease-in infinite;
-            pointer-events: none;
-            z-index: 0;
         }
 
         /* Icon button styles */
@@ -162,7 +137,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
-            justify-content: flex-end; /* Align buttons to the right */
+            justify-content: center;
         }
 
         .icon-btn {
@@ -179,15 +154,33 @@
         }
 
         .favorite-icon.filled {
-            color: #ff6347; /* 代表实心状态 */
+            color: #ff6347;
         }
 
-        /* Button container */
-        .button-wrapper {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 15px;
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .player-container {
+                padding: 15px;
+            }
+
+            .player-container h3 {
+                font-size: 1.3em;
+            }
+
+            button {
+                font-size: 0.9em;
+                padding: 8px;
+            }
+
+            .controls button {
+                flex: 1;
+                font-size: 0.9em;
+                margin: 0 5px;
+            }
+
+            .song-list, .favorite-list {
+                max-height: 120px;
+            }
         }
     </style>
 </head>
@@ -217,6 +210,7 @@
         <button onclick="previousSong()">上一首</button>
         <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
         <button onclick="nextSong()">下一首</button>
+        <button onclick="toggleFavorite()">收藏</button>
         <button onclick="togglePlayMode()" id="playModeButton">顺序播放</button>
     </div>
 
@@ -227,12 +221,6 @@
     </div>
     <div class="progress-bar" onclick="setProgress(event)">
         <div class="progress" id="progress"></div>
-    </div>
-
-    <!-- Favorite and Download buttons aligned -->
-    <div class="button-wrapper">
-        <button class="icon-btn favorite-icon" onclick="toggleFavorite()">♡</button>
-        <button class="icon-btn" onclick="downloadSong('sample-url')">⬇</button>
     </div>
 </div>
 
@@ -263,13 +251,14 @@
             const li = document.createElement('li');
             li.classList.add('song-item');
             const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-            li.innerHTML = `<span onclick="playSong(${index})">${song.name}</span>
-                            <div class="icon-container">
-                                <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
-                                    ${isFavorite ? '❤️' : '♡'}
-                                </button>
-                                <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
-                            </div>`;
+            li.innerHTML = `
+                <span onclick="playSong(${index})">${song.name}</span>
+                <div class="icon-container">
+                    <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
+                        ${isFavorite ? '❤️' : '♡'}
+                    </button>
+                    <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
+                </div>`;
             listElement.appendChild(li);
         });
     }
@@ -311,15 +300,17 @@
     function toggleFavoriteSong(index) {
         const song = musicList[index];
         const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-
         if (isFavorite) {
             favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
         } else {
             favoriteSongs.push(song);
         }
-
         displaySongs(musicList, 'songList');
         displaySongs(favoriteSongs, 'favoriteList');
+    }
+
+    function toggleFavorite() {
+        toggleFavoriteSong(currentIndex);
     }
 
     function downloadSong(url) {
@@ -329,39 +320,39 @@
         link.click();
     }
 
-    audio.addEventListener('timeupdate', () => {
-        const percent = (audio.currentTime / audio.duration) * 100;
-        progress.style.width = percent + '%';
-        currentTimeDisplay.textContent = formatTime(audio.currentTime);
-    });
+    function toggleList(listId) {
+        const list = document.getElementById(listId);
+        list.style.display = list.style.display === 'none' ? 'block' : 'none';
+    }
 
-    audio.addEventListener('loadedmetadata', () => {
-        durationTimeDisplay.textContent = formatTime(audio.duration);
-    });
-
-    audio.addEventListener('ended', nextSong);
-
-    function setProgress(e) {
-        const width = e.target.clientWidth;
-        const clickX = e.offsetX;
+    function setProgress(event) {
+        const width = event.target.clientWidth;
+        const clickX = event.offsetX;
         const duration = audio.duration;
         audio.currentTime = (clickX / width) * duration;
     }
 
+    audio.addEventListener('timeupdate', () => {
+        const progressPercent = (audio.currentTime / audio.duration) * 100;
+        progress.style.width = `${progressPercent}%`;
+        currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        durationTimeDisplay.textContent = formatTime(audio.duration);
+    });
+
     function formatTime(time) {
         const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds}`;
     }
 
-    function toggleList(listId) {
-        const list = document.getElementById(listId);
-        list.style.display = list.style.display === 'block' ? 'none' : 'block';
+    function togglePlayMode() {
+        playMode = playMode === "order" ? "shuffle" : "order";
+        document.getElementById('playModeButton').textContent = playMode === "order" ? "顺序播放" : "随机播放";
     }
 
     function searchSongs() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchInput));
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchTerm));
         displaySongs(filteredSongs, 'songList');
     }
 
@@ -369,4 +360,5 @@
 </script>
 </body>
 </html>
+
 
