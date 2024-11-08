@@ -196,7 +196,6 @@
         <button onclick="previousSong()">上一首</button>
         <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
         <button onclick="nextSong()">下一首</button>
-        <button onclick="toggleFavorite()">收藏</button>
         <button onclick="togglePlayMode()" id="playModeButton">顺序播放</button>
     </div>
 
@@ -237,8 +236,8 @@
             const li = document.createElement('li');
             li.classList.add('song-item');
             const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-            li.innerHTML = `
-                <span onclick="playSong(${index})">${song.name}</span>
+            li.innerHTML = 
+                `<span onclick="playSong(${index})">${song.name}</span>
                 <div class="icon-container">
                     <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
                         ${isFavorite ? '❤️' : '♡'}
@@ -320,6 +319,10 @@
         durationTimeDisplay.textContent = formatTime(duration);
     };
 
+    audio.onended = () => {
+        nextSong();
+    };
+
     function setProgress(e) {
         const width = e.target.clientWidth;
         const clickX = e.offsetX;
@@ -353,4 +356,3 @@
 </script>
 </body>
 </html>
-
