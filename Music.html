@@ -239,7 +239,7 @@
         <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
         <button onclick="nextSong()">下一首</button>
         <button class="play-mode-btn" onclick="changePlayMode()" title="切换播放模式">
-            <span id="playModeIcon">🔁</span>
+            <span id="playModeIcon">➤</span>
         </button>
     </div>
 
@@ -481,15 +481,15 @@
     function changePlayMode() {
         if (playMode === 'sequential') {
             playMode = 'random';
-            playModeIcon.textContent = '🔀';
+            playModeIcon.textContent = '⤭';
             playModeIcon.title = '随机播放';
         } else if (playMode === 'random') {
             playMode = 'single';
-            playModeIcon.textContent = '🔂';
+            playModeIcon.textContent = '↺';
             playModeIcon.title = '单曲循环';
         } else {
             playMode = 'sequential';
-            playModeIcon.textContent = '🔁';
+            playModeIcon.textContent = '➤';
             playModeIcon.title = '顺序播放';
         }
     }
