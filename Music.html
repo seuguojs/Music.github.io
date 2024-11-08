@@ -36,19 +36,16 @@
             animation: snowflakes linear infinite;
             pointer-events: none;
             opacity: 0.8;
-            transition: opacity 0.5s ease;
         }
 
         .snowflake:nth-child(odd) {
             font-size: 25px;
             animation-duration: 8s;
-            opacity: 0.9;
         }
 
         .snowflake:nth-child(even) {
             font-size: 15px;
             animation-duration: 10s;
-            opacity: 0.7;
             animation-delay: 2s;
         }
 
@@ -70,49 +67,6 @@
             margin-bottom: 10px;
         }
 
-        /* Song List and Favorites List */
-        .list-container {
-            margin: 20px 0;
-        }
-        .list-container h4 {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #f1f1f1;
-            color: #4a6fa1;
-            margin: 0;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-        }
-        .list-container h4 span {
-            font-size: 14px;
-            color: #888;
-        }
-
-        .song-list, .favorite-list {
-            list-style: none;
-            padding: 0;
-            max-height: 150px;
-            overflow-y: auto;
-            border-top: 1px solid #ddd;
-        }
-
-        .song-item {
-            padding: 10px;
-            cursor: pointer;
-            color: #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .song-item:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* Controls */
         .controls {
             display: flex;
             justify-content: space-around;
@@ -132,82 +86,23 @@
             background-color: #6a85b6;
         }
 
-        /* Play Mode Button */
-        .play-mode-btn {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        /* Message Popup */
+        .message-popup {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            z-index: 999;
+            display: none;
         }
 
-        /* Progress bar and Time display */
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background-color: #ddd;
-            border-radius: 5px;
-            margin: 15px 0;
-            cursor: pointer;
-            position: relative;
-        }
-        .progress {
-            width: 0;
-            height: 100%;
-            background-color: #4a6fa1;
-            border-radius: 5px;
-        }
-        .time {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #555;
-        }
-
-        /* Search */
-        .search-container {
-            margin: 10px 0;
-            width: 100%;
-        }
-        .search-container input {
-            padding: 8px;
-            width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .player-container {
-                padding: 15px;
-                width: 90%;
-            }
-
-            .song-item {
-                font-size: 14px;
-            }
-
-            .list-container h4 {
-                font-size: 14px;
-            }
-        }
-
-        /* Icon Button Styles */
-        .icon-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-        }
-        .icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: #4a6fa1;
-            transition: color 0.3s;
-        }
-        .icon-btn:hover {
-            color: #6a85b6;
+        .message-popup.active {
+            display: block;
         }
 
         /* MP4 Video Container */
@@ -235,66 +130,67 @@
             max-height: 80%;
         }
 
-        /* Message Popup */
-        .message-popup {
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 24px;
-            z-index: 999;
-            display: none;
+        /* Song List */
+        .song-list-container {
+            margin: 20px 0;
         }
 
-        .message-popup.active {
-            display: block;
+        .song-list-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .song-item {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            color: #333;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .song-item:hover {
+            background-color: #ddd;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .player-container {
+                padding: 15px;
+                width: 90%;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="player-container">
-    <h3>圣诞节音乐播放器</h3>
+<!-- Snowflakes effect -->
+<div id="snowflakes"></div>
 
-    <!-- Search -->
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="搜索音乐..." oninput="searchSongs()">
+<!-- Music Player Container -->
+<div class="player-container" id="playerContainer">
+    <h3>选择圣诞节音乐</h3>
+
+    <!-- Song List -->
+    <div class="song-list-container">
+        <ul id="songList">
+            <!-- Songs will be listed here -->
+        </ul>
     </div>
-
-    <!-- Song and Favorite List -->
-    <div class="list-container">
-        <h4 onclick="toggleList('favoriteList')">收藏列表 <span id="favoriteCount">0</span></h4>
-        <ul class="favorite-list" id="favoriteList" style="display: none;"></ul>
-
-        <h4 onclick="toggleList('songList')">音乐列表 <span id="songCount">0</span></h4>
-        <ul class="song-list" id="songList"></ul>
-    </div>
-
-    <!-- Current song display -->
-    <div id="currentSong">当前歌曲: 未播放</div>
 
     <!-- Controls -->
     <div class="controls">
-        <button onclick="previousSong()">上一首</button>
-        <button onclick="togglePlayPause()" id="playPauseButton">播放</button>
-        <button onclick="nextSong()">下一首</button>
-        <button class="play-mode-btn" onclick="changePlayMode()" title="切换播放模式">
-            <span id="playModeIcon">➤</span>
-        </button>
+        <button id="playPauseButton" onclick="togglePlayPause()">播放</button>
+        <button id="minimizeButton" onclick="minimizePlayer()">最小化</button>
     </div>
+</div>
 
-    <!-- Progress bar and Time display -->
-    <div class="time">
-        <span id="currentTime">00:00</span>
-        <span id="durationTime">--:--</span>
-    </div>
-    <div class="progress-bar" onclick="setProgress(event)">
-        <div class="progress" id="progress"></div>
-    </div>
+<!-- Video Container -->
+<div class="video-container" id="videoContainer">
+    <video id="christmasVideo" autoplay loop>
+        <source src="https://github.com/seuguojs/Music.github.io/blob/main/a3c88c4966b2de751d960aa345be3e37.mp4?raw=true" type="video/mp4">
+        您的浏览器不支持视频播放。
+    </video>
 </div>
 
 <!-- Message Popup -->
@@ -302,143 +198,75 @@
     圣诞快乐！愿你拥有一个温馨的假期！
 </div>
 
-<!-- MP4 Video -->
-<div class="video-container" id="videoContainer">
-    <video id="christmasVideo" controls autoplay>
-        <source src="your-video.mp4" type="video/mp4">
-        您的浏览器不支持视频播放。
-    </video>
-</div>
-
 <script>
-    let musicList = [];
-    let favoriteSongs = [];
-    let currentIndex = 0;
-    let isPlaying = false;
-    let playMode = 'all'; // 'all' | 'favorites'
-    let currentVideoPlayed = false;
-
-    // Add snowflakes animation
+    // Snowflakes effect
     for (let i = 0; i < 50; i++) {
         let snowflake = document.createElement('div');
         snowflake.classList.add('snowflake');
         snowflake.innerText = '❄';
         snowflake.style.left = Math.random() * 100 + '%';
         snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
-        document.body.appendChild(snowflake);
+        document.getElementById('snowflakes').appendChild(snowflake);
     }
 
-    // Sample songs
-    musicList = [
-        { name: "周杰伦-稻香", url: "周杰伦-稻香.mp3" },
-        { name: "圣诞之歌", url: "christmas_song.mp3" }
+    // Song list
+    const songs = [
+        { name: '周杰伦 - 稻香', url: '周杰伦-稻香.mp3' },
+        { name: '圣诞之歌', url: 'christmas_song.mp3' }
     ];
 
-    // Initialize song list
+    let audio;
+    let isPlaying = false;
+    let currentIndex = 0;
+
+    // Load songs into the list
     function loadSongs() {
-        let songList = document.getElementById('songList');
+        const songList = document.getElementById('songList');
         songList.innerHTML = '';
-        musicList.forEach((song, index) => {
+        songs.forEach((song, index) => {
             let li = document.createElement('li');
             li.classList.add('song-item');
-            li.innerHTML = song.name;
-            li.onclick = function() { selectSong(index); };
+            li.textContent = song.name;
+            li.onclick = () => selectSong(index);
             songList.appendChild(li);
         });
-
-        document.getElementById('songCount').innerText = musicList.length;
     }
 
-    // Toggle between all songs or favorite songs
-    function toggleList(list) {
-        let listElement = document.getElementById(list);
-        listElement.style.display = listElement.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // Select song
+    // Select a song to play
     function selectSong(index) {
         currentIndex = index;
-        let currentSong = musicList[currentIndex];
-        document.getElementById('currentSong').innerText = '当前歌曲: ' + currentSong.name;
-
-        // Play song logic
-        playSong(currentSong);
-    }
-
-    // Play song
-    function playSong(song) {
-        let audio = new Audio(song.url);
+        const selectedSong = songs[index];
+        if (audio) {
+            audio.pause();
+        }
+        audio = new Audio(selectedSong.url);
         audio.play();
         isPlaying = true;
-        document.getElementById('playPauseButton').innerText = '暂停';
+        document.getElementById('playPauseButton').textContent = '暂停';
 
-        // When song ends, play the next song
-        audio.onended = function() {
-            if (playMode === 'all') {
-                nextSong();
-            } else {
-                audio.play(); // Keep playing if in favorites mode
-            }
-        };
-
-        // Handle video display
-        if (!currentVideoPlayed) {
-            playVideo();
-        }
+        // Show the message popup after song starts
+        document.getElementById('messagePopup').classList.add('active');
     }
 
-    // Play or pause the song
+    // Toggle play/pause
     function togglePlayPause() {
-        let audio = new Audio(musicList[currentIndex].url);
         if (isPlaying) {
             audio.pause();
-            document.getElementById('playPauseButton').innerText = '播放';
-            isPlaying = false;
+            document.getElementById('playPauseButton').textContent = '播放';
         } else {
             audio.play();
-            document.getElementById('playPauseButton').innerText = '暂停';
-            isPlaying = true;
+            document.getElementById('playPauseButton').textContent = '暂停';
         }
+        isPlaying = !isPlaying;
     }
 
-    // Next song
-    function nextSong() {
-        currentIndex = (currentIndex + 1) % musicList.length;
-        selectSong(currentIndex);
-    }
-
-    // Previous song
-    function previousSong() {
-        currentIndex = (currentIndex - 1 + musicList.length) % musicList.length;
-        selectSong(currentIndex);
-    }
-
-    // Change play mode
-    function changePlayMode() {
-        if (playMode === 'all') {
-            playMode = 'favorites';
-            document.getElementById('playModeIcon').innerText = '🔁';
-        } else {
-            playMode = 'all';
-            document.getElementById('playModeIcon').innerText = '➤';
-        }
-    }
-
-    // Play video
-    function playVideo() {
+    // Minimize the music player
+    function minimizePlayer() {
+        document.getElementById('playerContainer').style.display = 'none';
         document.getElementById('videoContainer').classList.add('active');
-        currentVideoPlayed = true;
     }
 
-    // Search songs
-    function searchSongs() {
-        let input = document.getElementById('searchInput').value.toLowerCase();
-        let filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(input));
-        musicList = filteredSongs;
-        loadSongs();
-    }
-
-    // Initialize the page
+    // Load songs when the page is ready
     loadSongs();
 </script>
 
