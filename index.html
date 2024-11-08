@@ -74,7 +74,6 @@
         .list-container {
             margin: 20px 0;
         }
-
         .list-container h4 {
             cursor: pointer;
             padding: 10px;
@@ -87,7 +86,6 @@
             align-items: center;
             font-size: 16px;
         }
-
         .list-container h4 span {
             font-size: 14px;
             color: #888;
@@ -121,7 +119,6 @@
             margin: 15px 0;
             align-items: center;
         }
-
         .controls button {
             padding: 8px 12px;
             border: none;
@@ -131,7 +128,6 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         .controls button:hover {
             background-color: #6a85b6;
         }
@@ -153,14 +149,12 @@
             cursor: pointer;
             position: relative;
         }
-
         .progress {
             width: 0;
             height: 100%;
             background-color: #4a6fa1;
             border-radius: 5px;
         }
-
         .time {
             display: flex;
             justify-content: space-between;
@@ -173,7 +167,6 @@
             margin: 10px 0;
             width: 100%;
         }
-
         .search-container input {
             padding: 8px;
             width: 100%;
@@ -205,7 +198,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .icon-btn {
             background: none;
             border: none;
@@ -214,7 +206,6 @@
             color: #4a6fa1;
             transition: color 0.3s;
         }
-
         .icon-btn:hover {
             color: #6a85b6;
         }
@@ -304,39 +295,40 @@
         songs.forEach((song, index) => {
             const li = document.createElement('li');
             li.classList.add('song-item');
-            const isFavorite = favoriteSongs.includes(song.id);
+            const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
             li.innerHTML = `
-                ${song.title} - ${song.artist}
-                <button onclick="toggleFavorite(${index})">${isFavorite ? '★' : '☆'}</button>
+                <span onclick="playSong(${index}, '${elementId}')">${song.name}</span>
+                <div class="icon-container">
+                    <button class="icon-btn" onclick="toggleFavoriteSong(event, ${index}, '${elementId}')">
+                        ${isFavorite ? '❤️' : '♡'}
+                    </button>
+                    <button class="icon-btn" onclick="downloadSong('${song.url}')">⬇</button>
+                </div>
             `;
             listElement.appendChild(li);
         });
-    }
-
-    // Toggle favorite status
-    function toggleFavorite(index) {
-        const song = musicList[index];
-        if (favoriteSongs.includes(song.id)) {
-            favoriteSongs = favoriteSongs.filter(id => id !== song.id);
-        } else {
-            favoriteSongs.push(song.id);
-        }
         updateFavoriteCount();
-        displaySongs(musicList, 'songList');
-        displaySongs(favoriteSongs.map(id => musicList.find(song => song.id === id)), 'favoriteList');
     }
 
-    // Update favorite count
-    function updateFavoriteCount() {
-        favoriteCount.textContent = favoriteSongs.length;
+    // Play song
+    function playSong(index, listId) {
+        if (listId === 'favoriteList') {
+            currentPlayingList = 'favoriteList';
+            currentIndex = index;
+            audio.src = favoriteSongs[currentIndex].url;
+            currentSongDisplay.textContent = `当前歌曲: ${favoriteSongs[currentIndex].name}`;
+        } else {
+            currentPlayingList = 'songList';
+            currentIndex = index;
+            audio.src = musicList[currentIndex].url;
+            currentSongDisplay.textContent = `当前歌曲: ${musicList[currentIndex].name}`;
+        }
+        audio.play();
+        isPlaying = true;
+        playPauseButton.textContent = '暂停';
     }
 
-    // Update song count
-    function updateSongCount() {
-        songCount.textContent = musicList.length;
-    }
-
-    // Toggle between play and pause
+    // Toggle play/pause
     function togglePlayPause() {
         if (isPlaying) {
             audio.pause();
@@ -348,109 +340,182 @@
         isPlaying = !isPlaying;
     }
 
-    // Update progress bar
-    audio.addEventListener('timeupdate', () => {
-        const progressPercentage = (audio.currentTime / audio.duration) * 100;
-        progress.style.width = progressPercentage + '%';
-        currentTimeDisplay.textContent = formatTime(audio.currentTime);
-        durationTimeDisplay.textContent = formatTime(audio.duration);
-    });
-
-    // Format time (MM:SS)
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secondsRemaining = Math.floor(seconds % 60);
-        return `${minutes < 10 ? '0' : ''}${minutes}:${secondsRemaining < 10 ? '0' : ''}${secondsRemaining}`;
-    }
-
-    // Set progress bar on click
-    function setProgress(event) {
-        const progressBarWidth = event.currentTarget.offsetWidth;
-        const clickPosition = event.offsetX;
-        const clickedTime = (clickPosition / progressBarWidth) * audio.duration;
-        audio.currentTime = clickedTime;
-    }
-
-    // Switch play mode
-    function changePlayMode() {
-        if (playMode === 'sequential') {
-            playMode = 'random';
-            playModeIcon.textContent = '🔀';
-        } else if (playMode === 'random') {
-            playMode = 'single';
-            playModeIcon.textContent = '🔁';
-        } else {
-            playMode = 'sequential';
-            playModeIcon.textContent = '➤';
-        }
-    }
-
     // Play next song
     function nextSong() {
-        if (playMode === 'sequential') {
-            currentIndex++;
-            if (currentIndex >= musicList.length) currentIndex = 0;
-        } else if (playMode === 'random') {
-            currentIndex = Math.floor(Math.random() * musicList.length);
-        } else {
-            // 'single' mode, do nothing
+        if (playMode === 'single') {
+            audio.currentTime = 0;
+            audio.play();
+            return;
         }
-        playSong();
+
+        const list = currentPlayingList === 'favoriteList' ? favoriteSongs : musicList;
+        if (list.length === 0) return;
+
+        if (playMode === 'random') {
+            currentIndex = Math.floor(Math.random() * list.length);
+        } else { // 'sequential'
+            currentIndex = (currentIndex + 1) % list.length;
+        }
+        playSong(currentIndex, currentPlayingList);
     }
 
     // Play previous song
     function previousSong() {
-        if (playMode === 'sequential') {
-            currentIndex--;
-            if (currentIndex < 0) currentIndex = musicList.length - 1;
-        } else if (playMode === 'random') {
-            currentIndex = Math.floor(Math.random() * musicList.length);
-        } else {
-            // 'single' mode, do nothing
+        const list = currentPlayingList === 'favoriteList' ? favoriteSongs : musicList;
+        if (list.length === 0) return;
+
+        if (playMode === 'random') {
+            currentIndex = Math.floor(Math.random() * list.length);
+        } else { // 'sequential'
+            currentIndex = (currentIndex - 1 + list.length) % list.length;
         }
-        playSong();
+        playSong(currentIndex, currentPlayingList);
     }
 
-    // Play a specific song
-    function playSong() {
-        const song = musicList[currentIndex];
-        currentSongDisplay.textContent = `当前歌曲: ${song.title} - ${song.artist}`;
-        audio.src = song.url;
-        audio.play();
-        playPauseButton.textContent = '暂停';
-        isPlaying = true;
-    }
+    // Toggle favorite song
+    function toggleFavoriteSong(event, index, listId) {
+        event.stopPropagation(); // Prevent triggering playSong
 
-    // Toggle between favorite list and song list
-    function toggleList(listId) {
-        const favoriteList = document.getElementById('favoriteList');
-        const songList = document.getElementById('songList');
+        let song;
         if (listId === 'favoriteList') {
-            favoriteList.style.display = favoriteList.style.display === 'none' ? 'block' : 'none';
-            songList.style.display = 'none';
-            currentPlayingList = 'favoriteList';
+            song = favoriteSongs[index];
         } else {
-            songList.style.display = songList.style.display === 'none' ? 'block' : 'none';
-            favoriteList.style.display = 'none';
-            currentPlayingList = 'songList';
+            song = musicList[index];
+        }
+
+        const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
+        if (isFavorite) {
+            favoriteSongs = favoriteSongs.filter(fav => fav.name !== song.name);
+        } else {
+            favoriteSongs.push(song);
+        }
+        displaySongs(musicList, 'songList');
+        displaySongs(favoriteSongs, 'favoriteList');
+    }
+
+    // Download song
+    function downloadSong(url) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = url.split('/').pop();
+        a.click();
+    }
+
+    // Toggle list visibility
+    function toggleList(listId) {
+        const listElement = document.getElementById(listId);
+        const isVisible = listElement.style.display === 'block';
+        document.querySelectorAll('.list-container ul').forEach(ul => {
+            ul.style.display = 'none';
+        });
+        if (!isVisible) {
+            listElement.style.display = 'block';
         }
     }
 
-    // Search songs by title or artist
-    function searchSongs() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filteredSongs = musicList.filter(song =>
-            song.title.toLowerCase().includes(query) ||
-            song.artist.toLowerCase().includes(query)
-        );
-        displaySongs(filteredSongs, currentPlayingList);
+    // Update song count
+    function updateSongCount() {
+        songCount.textContent = musicList.length;
     }
+
+    // Update favorite count
+    function updateFavoriteCount() {
+        favoriteCount.textContent = favoriteSongs.length;
+    }
+
+    // Update progress bar
+    audio.addEventListener('timeupdate', () => {
+        const { currentTime, duration } = audio;
+        if (duration) {
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            currentTimeDisplay.textContent = formatTime(currentTime);
+            durationTimeDisplay.textContent = formatTime(duration);
+        } else {
+            progress.style.width = `0%`;
+            currentTimeDisplay.textContent = `00:00`;
+            durationTimeDisplay.textContent = `--:--`;
+        }
+    });
+
+    // Set progress on click
+    function setProgress(event) {
+        const progressBarWidth = event.currentTarget.clientWidth;
+        const clickX = event.offsetX;
+        const duration = audio.duration;
+        if (duration) {
+            audio.currentTime = (clickX / progressBarWidth) * duration;
+        }
+    }
+
+    // Format time (mm:ss)
+    function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    }
+
+    // Search songs
+    function searchSongs() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const filteredSongs = musicList.filter(song => song.name.toLowerCase().includes(searchValue));
+        displaySongs(filteredSongs, 'songList');
+    }
+
+    // Generate falling snowflakes
+    function createRandomSnowflake() {
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    snowflake.textContent = '❄';
+
+    // 随机位置、大小、透明度
+    snowflake.style.left = `${Math.random() * 100}vw`;
+    snowflake.style.fontSize = `${Math.random() * 10 + 20}px`;
+    snowflake.style.opacity = `${Math.random() * 0.5 + 0.5}`;
+    
+    // 随机动画持续时间和摆动幅度
+    snowflake.style.animationDuration = `${Math.random() * 5 + 8}s`;
+    snowflake.style.animationDelay = `${Math.random() * 2}s`;
+    
+    document.body.appendChild(snowflake);
+
+    // 自动清理雪花元素
+    setTimeout(() => snowflake.remove(), 15000);
+    }
+
+    setInterval(createRandomSnowflake, 400);
+
+    // Play mode change
+    function changePlayMode() {
+        if (playMode === 'sequential') {
+            playMode = 'random';
+            playModeIcon.textContent = '⤭';
+            playModeIcon.title = '随机播放';
+        } else if (playMode === 'random') {
+            playMode = 'single';
+            playModeIcon.textContent = '↺';
+            playModeIcon.title = '单曲循环';
+        } else {
+            playMode = 'sequential';
+            playModeIcon.textContent = '➤';
+            playModeIcon.title = '顺序播放';
+        }
+    }
+
+    // Handle song end based on play mode
+    audio.addEventListener('ended', () => {
+        if (playMode === 'single') {
+            audio.currentTime = 0;
+            audio.play();
+        } else {
+            nextSong();
+        }
+    });
 
     // Initialize the player
-    window.onload = loadMusicList;
+    loadMusicList();
 </script>
 
 </body>
 </html>
-
 
