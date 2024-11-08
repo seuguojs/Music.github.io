@@ -236,8 +236,8 @@
             const li = document.createElement('li');
             li.classList.add('song-item');
             const isFavorite = favoriteSongs.some(fav => fav.name === song.name);
-            li.innerHTML = `
-                <span onclick="playSong(${index})">${song.name}</span>
+            li.innerHTML = 
+                `<span onclick="playSong(${index})">${song.name}</span>
                 <div class="icon-container">
                     <button class="icon-btn favorite-icon ${isFavorite ? 'filled' : ''}" onclick="toggleFavoriteSong(${index})">
                         ${isFavorite ? '❤️' : '♡'}
